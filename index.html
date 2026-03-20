@@ -225,16 +225,21 @@ let markerLayer = null;
 // ═══════════════════════════════════════════════════
 // Tab切换
 // ═══════════════════════════════════════════════════
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById(tab.dataset.tab).classList.add('active');
-    if (tab.dataset.tab === 'graphPage') renderGraph();
-    if (tab.dataset.tab === 'timelinePage') renderTimeline();
-    if (tab.dataset.tab === 'allusionPage') renderAllusions();
-    if (tab.dataset.tab === 'mapPage') initMap();
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.style.cursor = 'pointer';
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      const targetId = tab.dataset.tab;
+      const target = document.getElementById(targetId);
+      if (target) target.classList.add('active');
+      if (targetId === 'graphPage') renderGraph();
+      if (targetId === 'timelinePage') renderTimeline();
+      if (targetId === 'allusionPage') renderAllusions();
+      if (targetId === 'mapPage') initMap();
+    });
   });
 });
 
@@ -273,7 +278,12 @@ async function loadData() {
 }
 
 function showLoading() {
-  document.getElementById('poemList').innerHTML = '<div class="loading">正在加载诗词数据</div>';
+  document.getElementById('poemList').innerHTML = '<div class="loading" id="loadingMsg">正在加载诗词数据</div>';
+}
+function updateLoading(msg) {
+  const el = document.getElementById('loadingMsg');
+  if (el) el.textContent = msg;
+  else document.getElementById('poemList').innerHTML = '<div class="loading" id="loadingMsg">' + msg + '</div>';
 }
 
 // ═══════════════════════════════════════════════════
