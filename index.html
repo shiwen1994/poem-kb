@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>唐诗宋词 · 知识库</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Noto Serif SC","PingFang SC","Microsoft YaHei",serif;background:#0d0d14;color:#e8d5b0;min-height:100vh}
+
+/* 头部 */
+header{text-align:center;padding:40px 20px 20px;background:linear-gradient(180deg,#1a1520 0%,#0d0d14 100%);border-bottom:1px solid rgba(212,168,67,0.15)}
+header h1{font-size:26px;font-weight:300;color:#d4a843;letter-spacing:8px;margin-bottom:6px}
+header p{font-size:12px;color:#666;letter-spacing:2px}
+
+/* 统计条 */
+.stats-bar{display:flex;justify-content:center;gap:32px;padding:12px 20px;background:rgba(212,168,67,0.06);font-size:13px;color:#888;margin-bottom:0}
+.stats-bar span{color:#d4a843}
+
+/* Tab导航 */
+.tabs{display:flex;border-bottom:1px solid rgba(212,168,67,0.15);background:#0d0d14;position:sticky;top:0;z-index:100;overflow-x:auto}
+.tab{flex:1;min-width:80px;padding:14px 8px;text-align:center;font-size:13px;color:#666;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;white-space:nowrap}
+.tab:hover{color:#d4a843}
+.tab.active{color:#d4a843;border-bottom-color:#d4a843;background:rgba(212,168,67,0.06)}
+
+/* 页面容器 */
+.page{display:none;padding:20px;max-width:1200px;margin:0 auto;min-height:calc(100vh - 160px)}
+.page.active{display:block}
+
+/* 搜索区 */
+.search-wrap{max-width:640px;margin:20px auto 28px}
+.search-box{display:flex;gap:10px}
+#searchInput{flex:1;padding:13px 20px;background:rgba(255,255,255,0.06);border:1px solid rgba(212,168,67,0.25);border-radius:30px;color:#e8d5b0;font-size:15px;outline:none;transition:border-color 0.2s}
+#searchInput:focus{border-color:#d4a843}
+#searchInput::placeholder{color:#555}
+.filters{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.filter-btn{padding:5px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(212,168,67,0.15);border-radius:20px;color:#666;font-size:12px;cursor:pointer;transition:all 0.2s}
+.filter-btn:hover,.filter-btn.active{background:rgba(212,168,67,0.15);border-color:#d4a843;color:#d4a843}
+
+/* 结果 */
+#resultCount{font-size:13px;color:#555;margin-bottom:14px;padding-left:4px}
+.poem-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.poem-card{background:rgba(255,255,255,0.03);border:1px solid rgba(212,168,67,0.1);border-radius:10px;padding:18px;cursor:pointer;transition:all 0.2s}
+.poem-card:hover{background:rgba(212,168,67,0.08);border-color:rgba(212,168,67,0.3);transform:translateY(-2px)}
+.poem-card .poem-title{font-size:16px;color:#d4a843;margin-bottom:4px}
+.poem-card .poem-meta{font-size:12px;color:#666;margin-bottom:8px}
+.poem-card .poem-snippet{font-size:14px;color:#999;line-height:1.8;border-left:2px solid rgba(212,168,67,0.2);padding-left:10px;margin:8px 0}
+.poem-card .poem-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.tag{padding:2px 8px;background:rgba(196,30,58,0.12);border:1px solid rgba(196,30,58,0.25);border-radius:10px;color:#c41e3a;font-size:11px}
+
+/* 详情弹窗 */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;justify-content:center;align-items:center;padding:20px;overflow-y:auto}
+.modal.show{display:flex}
+.modal-content{background:#16141e;border:1px solid rgba(212,168,67,0.2);border-radius:14px;max-width:700px;width:100%;max-height:85vh;overflow-y:auto;padding:28px;position:relative}
+.modal-close{position:absolute;top:14px;right:18px;font-size:22px;color:#555;cursor:pointer;line-height:1;background:none;border:none}
+.modal-close:hover{color:#d4a843}
+.modal-title{font-size:22px;color:#d4a843;margin-bottom:4px}
+.modal-author{font-size:14px;color:#888;margin-bottom:18px}
+.modal-content-text{font-size:17px;line-height:2.2;color:#e8d5b0;margin:16px 0;letter-spacing:1px}
+.modal-section{margin-top:18px;padding-top:16px;border-top:1px solid rgba(212,168,67,0.1)}
+.modal-section h4{color:#c41e3a;font-size:13px;margin-bottom:8px;font-weight:400}
+
+/* 图谱页 */
+#graphPage{text-align:center}
+#graphSvg{width:100%;height:600px;background:rgba(0,0,0,0.3);border-radius:12px;border:1px solid rgba(212,168,67,0.1)}
+.graph-hint{font-size:12px;color:#555;margin-top:8px}
+
+/* 时间轴页 */
+#timelinePage{overflow-x:auto;padding-bottom:20px}
+#timelineSvg{width:100%;min-width:900px;height:400px;background:rgba(0,0,0,0.3);border-radius:12px;border:1px solid rgba(212,168,67,0.1)}
+
+/* 典故页 */
+.allusion-search{max-width:500px;margin:0 auto 24px}
+.allusion-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.allusion-card{background:rgba(255,255,255,0.03);border:1px solid rgba(212,168,67,0.1);border-radius:10px;padding:16px;cursor:pointer;transition:all 0.2s}
+.allusion-card:hover{background:rgba(212,168,67,0.08);border-color:rgba(212,168,67,0.3)}
+.allusion-card h4{color:#d4a843;font-size:15px;margin-bottom:6px}
+.allusion-card p{font-size:13px;color:#888;line-height:1.7}
+.allusion-card .source{color:#555;font-size:12px;margin-top:6px}
+
+/* 地图页 */
+#mapPage{padding:10px}
+#map{height:calc(100vh - 220px);min-height:500px;border-radius:12px;border:1px solid rgba(212,168,67,0.1)}
+
+/* 诗人弹窗 */
+.author-modal .author-name{font-size:24px;color:#d4a843;margin-bottom:4px}
+.author-modal .author-dynasty{font-size:13px;color:#c41e3a;margin-bottom:12px}
+.author-modal .author-desc{font-size:14px;color:#999;line-height:1.8;margin-bottom:14px}
+.author-modal .author-works h4{color:#c41e3a;font-size:13px;margin-bottom:8px;font-weight:400}
+.author-modal .author-works{font-size:13px;color:#888}
+.author-modal .author-relations{margin-top:12px}
+.author-modal .author-relations h4{color:#c41e3a;font-size:13px;margin-bottom:8px;font-weight:400}
+.rel-tag{display:inline-block;padding:3px 10px;background:rgba(212,168,67,0.1);border-radius:10px;color:#d4a843;font-size:12px;margin:3px}
+
+/* 加载状态 */
+.loading{text-align:center;padding:60px 0;color:#555;font-size:15px}
+.loading::after{content:"...";animation:dots 1.5s infinite}
+@keyframes dots{0%,20%{content:"."}40%{content:".."}60%,100%{content:"..."}}
+.empty{text-align:center;padding:60px 0;color:#444;font-size:14px}
+
+/* 底部 */
+footer{text-align:center;padding:24px;font-size:12px;color:#333;border-top:1px solid rgba(212,168,67,0.06);margin-top:40px}
+footer a{color:#555;text-decoration:none}
+footer a:hover{color:#d4a843}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>唐诗宋词 · 知识库</h1>
+  <p>78,660 首诗词 · 5,238 位诗人</p>
+</header>
+
+<div class="stats-bar">
+  <span id="statPoems">加载中…</span>
+  <span>·</span>
+  <span id="statAuthors">加载中…</span>
+  <span>·</span>
+  <span>数据基于 chinese-poetry (MIT)</span>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-tab="searchPage">🔍 搜索</div>
+  <div class="tab" data-tab="graphPage">🕸️ 图谱</div>
+  <div class="tab" data-tab="timelinePage">📅 时间轴</div>
+  <div class="tab" data-tab="allusionPage">📚 典故</div>
+  <div class="tab" data-tab="mapPage">🗺️ 地图</div>
+</div>
+
+<!-- Tab1: 搜索 -->
+<div class="page active" id="searchPage">
+  <div class="search-wrap">
+    <div class="search-box">
+      <input id="searchInput" placeholder="搜索诗人、诗句、地点…" autocomplete="off">
+    </div>
+    <div class="filters">
+      <span class="filter-btn active" data-filter="all">全部</span>
+      <span class="filter-btn" data-filter="Tang">唐诗</span>
+      <span class="filter-btn" data-filter="Song">宋词</span>
+      <span class="filter-btn" data-filter="五言绝句">五言绝句</span>
+      <span class="filter-btn" data-filter="七言绝句">七言绝句</span>
+      <span class="filter-btn" data-filter="五言律诗">五言律诗</span>
+      <span class="filter-btn" data-filter="七言律诗">七言律诗</span>
+      <span class="filter-btn" data-filter="词">词牌</span>
+      <span class="filter-btn" data-filter="乐府">乐府</span>
+    </div>
+  </div>
+  <div id="resultCount"></div>
+  <div class="poem-list" id="poemList"></div>
+</div>
+
+<!-- Tab2: 图谱 -->
+<div class="page" id="graphPage">
+  <div id="graphSvg"></div>
+  <p class="graph-hint">拖拽节点 · 滚轮缩放 · 点击查看诗人</p>
+</div>
+
+<!-- Tab3: 时间轴 -->
+<div class="page" id="timelinePage">
+  <div id="timelineSvg"></div>
+</div>
+
+<!-- Tab4: 典故 -->
+<div class="page" id="allusionPage">
+  <div class="allusion-search">
+    <input id="allusionSearch" class="search-box" style="width:100%" placeholder="搜索典故…">
+  </div>
+  <div class="allusion-list" id="allusionList"></div>
+</div>
+
+<!-- Tab5: 地图 -->
+<div class="page" id="mapPage">
+  <div id="map"></div>
+</div>
+
+<footer>
+  唐诗宋词知识库 · 数据基于 <a href="https://github.com/chinese-poetry/chinese-poetry" target="_blank">chinese-poetry</a> (MIT License) · 
+  GitHub: <a href="https://github.com/shiwen1994/poem-kb" target="_blank">shiwen1994/poem-kb</a>
+</footer>
+
+<!-- 诗词详情弹窗 -->
+<div class="modal" id="poemModal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closePoemModal()">×</button>
+    <div class="modal-title" id="mTitle"></div>
+    <div class="modal-author" id="mAuthor"></div>
+    <div class="modal-content-text" id="mContent"></div>
+    <div class="modal-section" id="mTags"></div>
+    <div class="modal-section" id="mAllusions"></div>
+  </div>
+</div>
+
+<!-- 诗人详情弹窗 -->
+<div class="modal" id="authorModal">
+  <div class="modal-content author-modal">
+    <button class="modal-close" onclick="closeAuthorModal()">×</button>
+    <div class="author-name" id="aName"></div>
+    <div class="author-dynasty" id="aDynasty"></div>
+    <div class="author-desc" id="aDesc"></div>
+    <div class="author-relations" id="aRelations"></div>
+    <div class="author-works" id="aWorks"></div>
+  </div>
+</div>
+
+<!-- CDN库 -->
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css">
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+
+<script>
+// ═══════════════════════════════════════════════════
+// 全局数据
+// ═══════════════════════════════════════════════════
+let allPoems = [];
+let allAuthors = {};
+let fuse = null;
+let currentFilter = 'all';
+let currentQuery = '';
+let map = null;
+let markerLayer = null;
+
+// ═══════════════════════════════════════════════════
+// Tab切换
+// ═══════════════════════════════════════════════════
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.tab).classList.add('active');
+    if (tab.dataset.tab === 'graphPage') renderGraph();
+    if (tab.dataset.tab === 'timelinePage') renderTimeline();
+    if (tab.dataset.tab === 'allusionPage') renderAllusions();
+    if (tab.dataset.tab === 'mapPage') initMap();
+  });
+});
+
+// ═══════════════════════════════════════════════════
+// 数据加载
+// ═══════════════════════════════════════════════════
+async function loadData() {
+  showLoading();
+  try {
+    const parts = [];
+    for (let i = 1; i <= 6; i++) {
+      const url = `https://raw.githubusercontent.com/shiwen1994/poem-kb/main/data/poems_part${i}.json`;
+      const r = await fetch(url);
+      const d = await r.json();
+      parts.push(...d);
+    }
+    allPoems = parts;
+
+    const ar = await fetch('https://raw.githubusercontent.com/shiwen1994/poem-kb/main/data/authors.json');
+    const ad = await ar.json();
+    ad.forEach(a => allAuthors[a.name] = a);
+
+    document.getElementById('statPoems').textContent = allPoems.length.toLocaleString() + ' 首';
+    document.getElementById('statAuthors').textContent = Object.keys(allAuthors).length.toLocaleString() + ' 位';
+
+    fuse = new Fuse(allPoems, {
+      keys: ['title','author','content','tags','form'],
+      threshold: 0.4,
+      minMatchCharLength: 1
+    });
+    renderResults();
+  } catch(e) {
+    console.error(e);
+    document.getElementById('poemList').innerHTML = '<div class="empty">数据加载失败，请检查网络后刷新重试。</div>';
+  }
+}
+
+function showLoading() {
+  document.getElementById('poemList').innerHTML = '<div class="loading">正在加载诗词数据</div>';
+}
+
+// ═══════════════════════════════════════════════════
+// 搜索 & 筛选
+// ═══════════════════════════════════════════════════
+const searchInput = document.getElementById('searchInput');
+let searchTimer;
+searchInput.addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    currentQuery = searchInput.value.trim();
+    renderResults();
+  }, 200);
+});
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    renderResults();
+  });
+});
+
+function filterPoems(poems) {
+  let result = poems;
+  if (currentFilter !== 'all') {
+    if (currentFilter === 'Tang') result = result.filter(p => p.dynasty === 'Tang');
+    else if (currentFilter === 'Song') result = result.filter(p => p.dynasty === 'Song');
+    else result = result.filter(p => p.form === currentFilter || (p.tags && p.tags.includes(currentFilter)));
+  }
+  return result;
+}
+
+function renderResults() {
+  let poems;
+  if (!fuse) return;
+  if (currentQuery) {
+    poems = fuse.search(currentQuery).map(r => r.item);
+  } else {
+    poems = allPoems;
+  }
+  poems = filterPoems(poems);
+  document.getElementById('resultCount').textContent =
+    currentQuery ? `找到 ${poems.length.toLocaleString()} 首` : `共 ${poems.length.toLocaleString()} 首`;
+
+  const list = document.getElementById('poemList');
+  if (poems.length === 0) {
+    list.innerHTML = '<div class="empty">未找到相关诗词</div>';
+    return;
+  }
+
+  list.innerHTML = poems.slice(0, 100).map(p => {
+    const lines = p.content ? p.content.split(/[，。；！？、\n]/).filter(l=>l.trim()).slice(0,2).join('，') : '';
+    const tags = (p.tags||[]).slice(0,3).map(t=>`<span class="tag">${t}</span>`).join('');
+    return `<div class="poem-card" onclick="showPoemModal('${p.id}')">
+      <div class="poem-title">${p.title||'无题'}</div>
+      <div class="poem-meta">${p.author||''} · ${p.dynasty==='Tang'?'唐':'宋'} · ${p.form||''}</div>
+      <div class="poem-snippet">${lines}</div>
+      <div class="poem-tags">${tags}</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════
+// 诗词弹窗
+// ═══════════════════════════════════════════════════
+function showPoemModal(id) {
+  const p = allPoems.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('mTitle').textContent = p.title || '无题';
+  document.getElementById('mAuthor').textContent = `${p.author||''} · ${p.dynasty==='Tang'?'唐':'宋'} · ${p.form||''}`;
+  
+  const paragraphs = p.content ? p.content.split(/(.{1,20})/g).filter(s=>s.trim()).map((l,i)=>i%2===0?l+'\n':l).join('') : '';
+  document.getElementById('mContent').textContent = paragraphs;
+
+  const tagsEl = document.getElementById('mTags');
+  if (p.tags && p.tags.length) {
+    tagsEl.innerHTML = `<h4>标签</h4>${p.tags.map(t=>`<span class="tag">${t}</span>`).join(' ')}`;
+    tagsEl.style.display = 'block';
+  } else { tagsEl.style.display = 'none'; }
+
+  document.getElementById('mAllusions').style.display = 'none';
+  document.getElementById('poemModal').classList.add('show');
+}
+
+function closePoemModal() {
+  document.getElementById('poemModal').classList.remove('show');
+}
+document.getElementById('poemModal').addEventListener('click', e => {
+  if (e.target.id === 'poemModal') closePoemModal();
+});
+
+// 诗人点击 → 弹窗
+function showAuthorModal(name) {
+  const a = allAuthors[name];
+  if (!a) return;
+  document.getElementById('aName').textContent = a.name;
+  document.getElementById('aDynasty').textContent = a.dynasty === 'Tang' ? '唐代诗人' : '宋代词人';
+  document.getElementById('aDesc').textContent = a.short_desc || a.full_desc || '暂无简介';
+  
+  const rel = getAuthorRelations(name);
+  const relEl = document.getElementById('aRelations');
+  if (rel.length) {
+    relEl.innerHTML = `<h4>人物关系</h4>${rel.map(r=>`<span class="rel-tag">${r.label}</span>`).join(' ')}`;
+    relEl.style.display = 'block';
+  } else { relEl.style.display = 'none'; }
+
+  const works = allPoems.filter(p=>p.author===name).slice(0,10);
+  const worksEl = document.getElementById('aWorks');
+  if (works.length) {
+    worksEl.innerHTML = `<h4>代表作</h4>${works.map(w=>w.title||w.form).filter(Boolean).join('、')}`;
+    worksEl.style.display = 'block';
+  } else { worksEl.style.display = 'none'; }
+
+  document.getElementById('authorModal').classList.add('show');
+}
+
+function closeAuthorModal() {
+  document.getElementById('authorModal').classList.remove('show');
+}
+document.getElementById('authorModal').addEventListener('click', e => {
+  if (e.target.id === 'authorModal') closeAuthorModal();
+});
+
+// ═══════════════════════════════════════════════════
+// 诗人关系（硬编码）
+// ═══════════════════════════════════════════════════
+const RELATIONS = [
+  {a:'李白',b:'杜甫',type:'friend',label:'诗友'},
+  {a:'李白',b:'孟浩然',type:'friend',label:'诗友'},
+  {a:'杜甫',b:'王维',type:'friend',label:'诗友'},
+  {a:'王维',b:'孟浩然',type:'friend',label:'诗友'},
+  {a:'白居易',b:'元稹',type:'friend',label:'诗友'},
+  {a:'韩愈',b:'柳宗元',type:'friend',label:'诗友'},
+  {a:'李商隐',b:'杜牧',type:'friend',label:'诗友'},
+  {a:'苏轼',b:'王安石',type:'rival',label:'政敌'},
+  {a:'苏轼',b:'黄庭坚',type:'friend',label:'诗友'},
+  {a:'辛弃疾',b:'陈亮',type:'friend',label:'词友'},
+  {a:'李清照',b:'赵明诚',type:'spouse',label:'夫妻'},
+  {a:'柳永',b:'范仲淹',type:'contemporary',label:'同时代'},
+  {a:'王维',b:'裴迪',type:'friend',label:'诗友'},
+  {a:'白居易',b:'刘禹锡',type:'friend',label:'诗友'},
+  {a:'陶渊明',b:'谢灵运',type:'influence',label:'影响'},
+];
+
+function getAuthorRelations(name) {
+  const rel = [];
+  RELATIONS.forEach(r => {
+    if (r.a === name) rel.push({label: r.label + '：' + r.b, target: r.b});
+    if (r.b === name) rel.push({label: r.label + '：' + r.a, target: r.a});
+  });
+  return rel;
+}
+
+// ═══════════════════════════════════════════════════
+// Tab2: 诗人关系图谱（D3 Force-Directed Graph）
+// ═══════════════════════════════════════════════════
+const POETS_FOR_GRAPH = {
+  Tang: ['李白','杜甫','王维','孟浩然','白居易','元稹','韩愈','柳宗元','刘禹锡','李商隐','杜牧','王勃','骆宾王','宋之问','贺知章','王昌龄','高适','岑参','王翰','李贺'],
+  Song: ['苏轼','王安石','黄庭坚','辛弃疾','李清照','陆游','欧阳修','范仲淹','晏殊','柳永','秦观','周邦彦','岳飞','文天祥','朱熹','杨万里','晏几道','姜夔','吴文英','纳兰性德']
+};
+
+function renderGraph() {
+  const container = document.getElementById('graphSvg');
+  if (container.children.length > 0) return; // 已渲染
+
+  const w = container.clientWidth || 800;
+  const h = container.clientHeight || 600;
+
+  const nodes = [...POETS_FOR_GRAPH.Tang.map(n=>({id:n,group:'Tang',name:n})),
+                 ...POETS_FOR_GRAPH.Song.map(n=>({id:n,group:'Song',name:n}))];
+
+  const links = [];
+  RELATIONS.forEach(r => {
+    const src = nodes.find(n=>n.id===r.a);
+    const tgt = nodes.find(n=>n.id===r.b);
+    if (src && tgt) links.push({source:src.id,target:tgt.id,type:r.type,label:r.label});
+  });
+
+  const svg = d3.select('#graphSvg').append('svg')
+    .attr('width','100%').attr('height','100%')
+    .attr('viewBox',`0 0 ${w} ${h}`);
+
+  const color = d3.scaleOrdinal()
+    .domain(['Tang','Song']).range(['#d4a843','#c41e3a']);
+
+  const simulation = d3.forceSimulation(nodes)
+    .force('link', d3.forceLink(links).id(d=>d.id).distance(100))
+    .force('charge', d3.forceManyBody().strength(-300))
+    .force('center', d3.forceCenter(w/2, h/2))
+    .force('x', d3.forceX(w/2).strength(0.05))
+    .force('y', d3.forceY(h/2).strength(0.05));
+
+  const link = svg.append('g').selectAll('line')
+    .data(links).join('line')
+    .attr('stroke','rgba(212,168,67,0.2)').attr('stroke-width',1.5);
+
+  const node = svg.append('g').selectAll('circle')
+    .data(nodes).join('circle')
+    .attr('r',20).attr('fill',d=>color(d.group))
+    .attr('stroke','rgba(255,255,255,0.1)').attr('stroke-width',1.5)
+    .call(drag(simulation))
+    .on('click',(e,d)=>showAuthorModal(d.id));
+
+  const label = svg.append('g').selectAll('text')
+    .data(nodes).join('text')
+    .text(d=>d.name)
+    .attr('text-anchor','middle').attr('dy',35)
+    .attr('fill','#888').attr('font-size','12px')
+    .style('pointer-events','none');
+
+  simulation.on('tick',()=>{
+    link.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
+        .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+    node.attr('cx',d=>d.x).attr('cy',d=>d.y);
+    label.attr('x',d=>d.x).attr('y',d=>d.y);
+  });
+
+  function drag(simulation) {
+    return d3.drag()
+      .on('start',(e,d)=>{if(!e.active)simulation.alphaTarget(0.3).restart();d.fx=d.x;d.fy=d.y;})
+      .on('drag',(e,d)=>{d.fx=e.x;d.fy=e.y;})
+      .on('end',(e,d)=>{if(!e.active)simulation.alphaTarget(0);d.fx=null;d.fy=null;});
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// Tab3: 时间轴
+// ═══════════════════════════════════════════════════
+const TIMELINE_EVENTS = [
+  {year:618,label:'唐朝建立',type:'event'},
+  {year:690,label:'武则天称帝',type:'event'},
+  {year:755,label:'安史之乱爆发',type:'event'},
+  {year:763,label:'安史之乱结束',type:'event'},
+  {year:835,label:'甘露之变',type:'event'},
+  {year:907,label:'唐朝灭亡',type:'event'},
+  {year:960,label:'宋朝建立',type:'event'},
+  {year:1000,label:'北宋中期',type:'era'},
+  {year:1069,label:'王安石变法',type:'event'},
+  {year:1127,label:'靖康之变',type:'event'},
+  {year:1138,label:'南宋定都临安',type:'event'},
+  {year:1200,label:'南宋中期',type:'era'},
+  {year:1279,label:'宋朝灭亡',type:'event'},
+];
+
+function renderTimeline() {
+  const container = document.getElementById('timelineSvg');
+  if (container.children.length > 0) return;
+  const w = container.clientWidth || 900;
+  const h = 380;
+  const margin = {top:60,bottom:40,left:60,right:30};
+  const innerW = w - margin.left - margin.right;
+  const innerH = h - margin.top - margin.bottom;
+
+  const svg = d3.select('#timelineSvg').append('svg')
+    .attr('width',w).attr('height',h)
+    .attr('viewBox',`0 0 ${w} ${h}`);
+
+  const g = svg.append('g').attr('transform',`translate(${margin.left},${margin.top})`);
+
+  const years = TIMELINE_EVENTS.map(e=>e.year);
+  const xScale = d3.scaleLinear().domain([d3.min(years),d3.max(years)+30]).range([0,innerW]);
+
+  // 主轴
+  g.append('line').attr('x1',0).attr('y1',innerH/2).attr('x2',innerW).attr('y2',innerH/2)
+    .attr('stroke','rgba(212,168,67,0.3)').attr('stroke-width',1);
+
+  // 事件
+  TIMELINE_EVENTS.forEach(e => {
+    const cx = xScale(e.year);
+    const isAbove = Math.random() > 0.5;
+    const cy = isAbove ? innerH/2 - 50 : innerH/2 + 50;
+    const ey = innerH/2;
+
+    g.append('line').attr('x1',cx).attr('y1',cy).attr('x2',cx).attr('y2',ey)
+      .attr('stroke','rgba(212,168,67,0.3)').attr('stroke-width',1);
+
+    const color = e.type==='event' ? '#c41e3a' : '#d4a843';
+    g.append('circle').attr('cx',cx).attr('cy',cy).attr('r',4).attr('fill',color);
+    g.append('circle').attr('cx',cx).attr('cy',ey).attr('r',3).attr('fill',color);
+
+    g.append('text').attr('x',cx).attr('y',cy-10)
+      .attr('text-anchor','middle').attr('fill',color).attr('font-size','11px')
+      .text(`${e.year} · ${e.label}`);
+  });
+
+  // 标注诗词（随机选取10首有年份的）
+  const poetEvents = [
+    {year:701,poet:'李白',title:'待考'},
+    {year:712,poet:'杜甫',title:'待考'},
+    {year:701,poet:'李白',title:'静夜思'},
+    {year:744,poet:'杜甫',title:'春望'},
+    {year:757,poet:'李白',title:'早发白帝城'},
+    {year:1046,poet:'范仲淹',title:'岳阳楼记'},
+    {year:1082,poet:'苏轼',title:'念奴娇·赤壁怀古'},
+    {year:1135,poet:'李清照',title:'声声慢'},
+    {year:1178,poet:'辛弃疾',title:'青玉案·元夕'},
+    {year:1205,poet:'文天祥',title:'过零丁洋'},
+  ];
+
+  poetEvents.forEach((pe, i) => {
+    const cx = xScale(pe.year) + (i%3-1)*6;
+    const cy = innerH/2 - 20;
+    g.append('text').attr('x',cx).attr('y',cy)
+      .attr('text-anchor','middle').attr('fill','#666').attr('font-size','10px')
+      .text(pe.poet);
+  });
+
+  // x轴标签
+
+// ═══════════════════════════════════════════════════
+// Tab4: 典故
+// ═══════════════════════════════════════════════════
+const ALLUSIONS = [
+  {name:'折腰',meaning:'比喻为人清高，不愿为微禄而屈身事人',origin:'《晋书·陶潜传》：陶渊明"吾不能为五斗米折腰"',poems:['李白《梦游天姥吟留别》']},
+  {name:'杯弓蛇影',meaning:'形容因疑神疑鬼而恐惧',origin:'《晋书·乐广传》：乐广宴客，客见杯中有蛇，归而病',poems:['杜甫《江夏送忠州郡使君弟》']},
+  {name:'闻鸡起舞',meaning:'比喻有志之士及时奋发',origin:'《晋书·祖逖传》：祖逖与刘琨闻鸡鸣而舞剑',poems:['陆游《夜游宫》']},
+  {name:'投笔从戎',meaning:'比喻弃文就武，建功立业',origin:'《后汉书·班超传》：超投笔叹曰"大丈夫应万里封侯"',poems:['高适《送董判官》']},
+  {name:'塞翁失马',meaning:'比喻坏事变好事，好事变坏事',origin:'《淮南子·人间训》：边塞老翁失马，三日后领马而归',poems:['刘鹗《老残游记》']},
+  {name:'纸上谈兵',meaning:'比喻空谈理论，不切实际',origin:'《史记·廉颇蔺相如列传》：赵括空谈兵法，不知变通',poems:['辛弃疾《京口北固亭怀古》']},
+  {name:'东山再起',meaning:'比喻隐退后复出任职',origin:'《晋书·谢安传》：谢安隐居东山，后复出为相',poems:['李白《梁园吟》']},
+  {name:'约法三章',meaning:'比喻事先约定条款',origin:'《史记·高祖本纪》：刘邦"约法三章，杀人者死，伤人及盗抵罪"',poems:['杜甫《哀王孙》']},
+  {name:'肝脑涂地',meaning:'形容竭尽忠诚，不惜牺牲',origin:'《史记·刘敬叔孙通列传》',poems:['杜甫《北征》']},
+  {name:'四面楚歌',meaning:'比喻四面受敌，孤立无援',origin:'《史记·项羽本纪》：项羽被围垓下，"项王军壁垓下…夜闻四面皆楚歌"',poems:['辛弃疾《贺新郎》']},
+  {name:'指鹿为马',meaning:'比喻故意颠倒黑白',origin:'《史记·秦始皇本纪》：赵高献鹿为马',poems:['李商隐《咏史》']},
+  {name:'破釜沉舟',meaning:'比喻下定决心，不留退路',origin:'《史记·项羽本纪》：项羽"破釜沉舟"，皆沉船破甑',poems:['李清照《夏日绝句》']},
+  {name:'卧薪尝胆',meaning:'形容人刻苦自励，奋发图强',origin:'《史记·越王勾践世家》：勾践坐卧尝胆，饮食不近女色',poems:['苏轼《留侯论》']},
+  {name:'草木皆兵',meaning:'形容人在极度惊恐时，一点风吹草动都疑神疑鬼',origin:'《晋书·苻坚载记》：苻坚望八公山上，"草木皆类人形"',poems:['辛弃疾《南乡子》']},
+  {name:'洛阳纸贵',meaning:'比喻著作风行一时，流传很广',origin:'《晋书·左思传》：左思《三都赋》写成，洛阳豪贵竟相传写',poems:['李白《赠卫八处士》']},
+  {name:'梦笔生花',meaning:'比喻文思俊逸，写作能力增强',origin:'《南史·纪少瑜传》：少瑜梦陆倕赠笔，"文藻日新"',poems:['李白《江上吟》']},
+  {name:'老骥伏枥',meaning:'比喻年迈之人仍怀壮志',origin:'曹操《步出夏门行》：老骥伏枥，志在千里',poems:['曹操《步出夏门行》']},
+  {name:'塞下曲',meaning:'描写边塞风光和戍边生活',origin:'唐代乐府旧题',poems:['李白《塞下曲》','王昌龄《塞下曲》']},
+  {name:'阳春白雪',meaning:'比喻高雅而不通俗的文艺作品',origin:'《楚辞·宋玉答楚王问》',poems:['李白《古风》']},
+  {name:'萧何月下追韩信',meaning:'比喻重视人才，求贤若渴',origin:'《史记·萧何世家》',poems:['李清照《夏日绝句》']},
+  {name:'多歧路',meaning:'比喻人生道路选择众多',origin:'李白《行路难》：多歧路，今安在',poems:['李白《行路难》']},
+  {name:'春风得意',meaning:'形容事情成功或仕途顺利时的得意心情',origin:'孟郊《登科后》：春风得意马蹄疾，一日看尽长安花',poems:['孟郊《登科后》']},
+  {name:'海阔天空',meaning:'比喻胸襟开阔，无拘无束',origin:'刘禹锡《浪淘沙》',poems:['刘禹锡《浪淘沙》']},
+  {name:'天涯沦落',meaning:'比喻流落在远方他处',origin:'白居易《琵琶行》：同是天涯沦落人',poems:['白居易《琵琶行》']},
+  {name:'春花秋月',meaning:'泛指美好时光',origin:'李煜《虞美人》：春花秋月何时了',poems:['李煜《虞美人》']},
+  {name:'人生如梦',meaning:'感叹人生虚妄或世事无常',origin:'苏轼《念奴娇·赤壁怀古》：人生如梦，一尊还酹江月',poems:['苏轼《念奴娇》']},
+  {name:'物是人非',meaning:'形容景物依旧，人事已变',origin:'李清照《武陵春》：物是人非事事休',poems:['李清照《武陵春》']},
+  {name:'莫等闲白了少年头',meaning:'劝诫珍惜时光，及时努力',origin:'岳飞《满江红》：莫等闲，白了少年头，空悲切',poems:['岳飞《满江红》']},
+  {name:'铁杵成针',meaning:'比喻有恒心有毅力，事情终究会成功',origin:'《方舆胜览》：李白遇老媪磨铁杵，欲针',poems:['李白《古风》']},
+  {name:'天台一万八千丈',meaning:'极言山高，或形容追求之高远',origin:'李白《梦游天姥吟留别》：天台一万八千丈',poems:['李白《梦游天姥吟留别》']},
+  {name:'曾经沧海',meaning:'比喻曾经见过大世面，眼界开阔',origin:'元稹《离思》：曾经沧海难为水，除却巫山不是云',poems:['元稹《离思》']},
+];
+
+function renderAllusions() {
+  const list = document.getElementById('allusionList');
+  if (list.children.length > 0) return;
+  renderAllusionList(ALLUSIONS);
+
+  document.getElementById('allusionSearch').addEventListener('input', e => {
+    const q = e.target.value.trim();
+    const filtered = q ? ALLUSIONS.filter(a =>
+      a.name.includes(q) || a.meaning.includes(q) || a.origin.includes(q)) : ALLUSIONS;
+    renderAllusionList(filtered);
+  });
+}
+
+function renderAllusionList(allusions) {
+  const list = document.getElementById('allusionList');
+  list.innerHTML = allusions.map(a => `
+    <div class="allusion-card">
+      <h4>${a.name}</h4>
+      <p>${a.meaning}</p>
+      <p class="source">出处：${a.origin}</p>
+      ${a.poems.map(p=>`<div class="tag" style="margin-top:6px">${p}</div>`).join('')}
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════
+// Tab5: 诗人足迹地图（Leaflet）
+// ═══════════════════════════════════════════════════
+function initMap() {
+  if (map) return;
+  map = L.map('map', {center:[35,110],zoom:4,zoomControl:true,scrollWheelZoom:true});
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'© OpenStreetMap',
+    maxZoom:18
+  }).addTo(map);
+
+  const POET_LOCATIONS = [
+    {name:'长安(西安)',lat:34.26,lng:108.95,poets:['李白','杜甫','王维','白居易','韩愈','柳宗元'],desc:'唐朝首都，诗歌圣地'},
+    {name:'洛阳',lat:34.62,lng:112.45,poets:['杜甫','白居易','李商隐'],desc:'东都，唐代诗人的重要游历地'},
+    {name:'成都',lat:30.67,lng:104.07,poets:['李白','杜甫'],desc:'杜甫草堂所在'},
+    {name:'扬州',lat:32.39,lng:119.42,poets:['李白','杜牧','徐凝'],desc:'江南繁华地，"烟花三月下扬州"'},
+    {name:'江陵(荆州)',lat:30.33,lng:112.24,poets:['李白','杜甫'],desc:'长江要冲，送别之地'},
+    {name:'武昌',lat:30.58,lng:114.29,poets:['李白','崔颢'],desc:'黄鹤楼所在'},
+    {name:'杭州',lat:30.25,lng:120.15,poets:['苏轼','白居易','林逋'],desc:'西湖，"未能抛得杭州去"'},
+    {name:'苏州',lat:31.30,lng:120.58,poets:['唐寅','张继'],desc:'江南水乡代表'},
+    {name:'黄山',lat:29.71,lng:118.34,poets:['李白'],desc:'"黄山四绝"，李白多篇歌咏'},
+    {name:'庐山',lat:29.52,lng:115.98,poets:['李白','苏轼'],desc:'李白"飞流直下三千尺"'},
+    {name:'洞庭湖',lat:28.68,lng:112.18,poets:['杜甫','刘禹锡'],desc:'岳阳楼，洞庭一湖'},
+    {name:'南昌(滕王阁)',lat:28.68,lng:115.88,poets:['王勃','杜甫'],desc:'滕王阁序诞生之地'},
+    {name:'济南',lat:36.65,lng:117.02,poets:['杜甫','李清照'],desc:'李清照故里'},
+    {name:'开封(汴京)',lat:34.79,lng:113.65,poets:['苏轼','欧阳修','柳永'],desc:'北宋首都'},
+    {name:'眉山',lat:30.04,lng:103.84,poets:['苏轼'],desc:'苏轼故乡'},
+    {name:'黄州(黄冈)',lat:30.45,lng:114.80,poets:['苏轼'],desc:'苏轼贬谪地，《赤壁赋》诞生处'},
+    {name:'惠州',lat:23.09,lng:114.42,poets:['苏轼'],desc:'苏轼再贬之地'},
+    {name:'儋州',lat:19.52,lng:109.58,poets:['苏轼'],desc:'苏轼被贬最远处'},
+    {name:'临安(杭州)',lat:30.25,lng:120.15,poets:['陆游','辛弃疾','岳飞'],desc:'南宋首都'},
+    {name:'绍兴',lat:30.06,lng:120.57,poets:['王羲之','陆游'],desc:'兰亭所在地'},
+    {name:'金华',lat:29.07,lng:119.65,poets:['李清照'],desc:'李清照金华避难时期'},
+    {name:'抚州',lat:27.95,lng:116.35,poets:['王安石'],desc:'王安石故乡'},
+    {name:'永州',lat:26.22,lng:111.62,poets:['柳宗元'],desc:'柳宗元被贬永州十年'},
+    {name:'柳州',lat:24.33,lng:109.42,poets:['柳宗元'],desc:'柳宗元终老之地'},
+    {name:'太原',lat:37.87,lng:112.55,poets:['王维','白居易'],desc:'唐代的北方重镇'},
+    {name:'并州(太原)',lat:37.87,lng:112.55,poets:['王之涣'],desc:'唐诗发源地之一'},
+    {name:'蓟州(天津)',lat:39.13,lng:117.20,poets:['陈子昂','高适'],desc:'幽燕之地，多慷慨悲歌'},
+    {name:'凉州(武威)',lat:37.92,lng:102.64,poets:['王翰','王之涣','李白'],desc:'边塞诗重要题材地'},
+    {name:'安西(库车)',lat:41.72,lng:82.99,poets:['岑参'],desc:'岑参边塞诗素材地'},
+    {name:'碎叶城',lat:40.52,lng:75.37,poets:['李白'],desc:'李白出生地（今吉尔吉斯斯坦）'},
+    {name:'太原',lat:37.87,lng:112.55,poets:['白居易'],desc:'白居易祖籍'},
+    {name:'襄阳',lat:32.01,lng:112.12,poets:['孟浩然'],desc:'孟浩然故乡'},
+    {name:'武夷山',lat:27.72,lng:118.04,poets:['朱熹','柳永'],desc:'朱熹讲学地'},
+    {name:'镇江',lat:32.20,lng:119.45,poets:['王安石','辛弃疾'],desc:'京口，北固山所在'},
+    {name:'常州',lat:31.81,lng:119.97,poets:['苏轼'],desc:'苏轼终老地'},
+    {name:'徐州',lat:34.20,lng:117.28,poets:['苏轼'],desc:'苏轼任知州'},
+    {name:'湖州',lat:30.87,lng:120.09,poets:['苏舜钦','赵孟頫'],desc:'苏舜钦建沧浪亭'},
+    {name:'滁州',lat:32.30,lng:118.30,poets:['欧阳修'],desc:'欧阳修写《醉翁亭记》'},
+    {name:'许昌',lat:34.04,lng:113.82,poets:['曹操'],desc:'曹操根据地'},
+    {name:'汝州',lat:34.16,lng:112.84,poets:['刘禹锡'],desc:'刘禹锡任职地'},
+    {name:'夔州(奉节)',lat:31.02,lng:109.52,poets:['杜甫'],desc:'杜甫夔州居住一年多，诗作极多'},
+    {name:'梓州(绵阳)',lat:31.47,lng:104.68,poets:['杜甫'],desc:'杜甫流寓梓州'},
+    {name:'白帝城',lat:31.04,lng:109.52,poets:['李白','杜甫'],desc:'李白流放遇赦地'},
+    {name:'宣城',lat:30.94,lng:118.87,poets:['李白','谢脁'],desc:'李白多首诗咏宣城'},
+    {name:'当涂',lat:31.57,lng:118.50,poets:['李白'],desc:'李白终老于当涂'},
+    {name:'龙标',lat:27.12,lng:109.77,poets:['王昌龄','李白'],desc:'王昌龄被贬龙标尉'},
+    {name:'郴州',lat:25.77,lng:113.02,poets:['秦观'],desc:'秦观贬谪郴州'},
+    {name:'梧州',lat:23.48,lng:111.28,poets:['秦观'],desc:'秦观再贬梧州'},
+    {name:'吉州',lat:27.11,lng:115.00,poets:['文天祥'],desc:'文天祥故乡'},
+  ];
+
+  POET_LOCATIONS.forEach(loc => {
+    const circle = L.circle([loc.lat, loc.lng], {
+      radius: Math.max(loc.poets.length * 4000, 8000),
+      color:'#c41e3a', fillColor:'#c41e3a', fillOpacity:0.25, weight:1
+    }).addTo(map);
+    circle.bindPopup(`<b>${loc.name}</b><br>${loc.desc}<br><b>相关诗人：</b>${loc.poets.join('、')}`);
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// 初始化
+// ═══════════════════════════════════════════════════
+loadData();
+</script>
+</body>
+</html>
