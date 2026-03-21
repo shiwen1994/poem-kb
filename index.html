@@ -249,20 +249,27 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadData() {
   showLoading();
   try {
-    // TEST MODE: load single small file
-    const testUrl = 'https://cdn.jsdelivr.net/gh/shiwen1994/poem-kb@main/poems_test.json';
-    const tr = await fetch(testUrl);
-    allPoems = await tr.json();
+    // 从云服务器API加载全量数据
+    const API = 'http://118.196.82.179/api';
+    const resp = await fetch(`${API}/poems?limit=1000`);
+    const data = await resp.json();
+    allPoems = data.data || [];
 
-    document.getElementById('statPoems').textContent = allPoems.length + ' 首（测试模式）';
-    document.getElementById('statAuthors').textContent = '- 位';
+    // 获取诗人信息
+    try {
+      const ar = await fetch(`${API}/authors?limit=1000`);
+      const ad = await ar.json();
+      (ad.data || []).forEach(a => allAuthors[a.name] = a);
+    } catch(e) {}
+
+    document.getElementById('statPoems').textContent = allPoems.length.toLocaleString() + ' 首';
+    document.getElementById('statAuthors').textContent = Object.keys(allAuthors).length.toLocaleString() + ' 位';
 
     fuse = new Fuse(allPoems, {
       keys: ['title','author','content','tags','form'],
       threshold: 0.4,
       minMatchCharLength: 1
     });
-    renderResults();
     renderResults();
   } catch(e) {
     console.error(e);
