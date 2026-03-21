@@ -249,22 +249,23 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadData() {
   showLoading();
   try {
-    // 从云服务器API加载全量数据
-    const API = 'http://118.196.82.179/api';
-    
-    // 并行请求诗词数据和诗人数据
-    const [poemsResp, statsResp] = await Promise.all([
-      fetch(`${API}/poems?limit=1000`),
-      fetch(`${API}/stats`)
-    ]);
-    
-    const poemsData = await poemsResp.json();
-    const statsData = await statsResp.json();
-    
-    allPoems = poemsData.data || [];
-    
-    document.getElementById('statPoems').textContent = (statsData.total_poems || allPoems.length).toLocaleString() + ' 首';
-    document.getElementById('statAuthors').textContent = (statsData.total_authors || 0).toLocaleString() + ' 位';
+    const parts = [];
+    for (let i = 1; i <= 6; i++) {
+      updateLoading(`加载诗词数据... (${i}/6)`);
+      const url = `https://cdn.jsdelivr.net/gh/shiwen1994/poem-kb@main/data/poems_part${i}.json`;
+      const r = await fetch(url);
+      const d = await r.json();
+      parts.push(...d);
+    }
+    allPoems = parts;
+
+    updateLoading('加载诗人数据...');
+    const ar = await fetch('https://cdn.jsdelivr.net/gh/shiwen1994/poem-kb@main/data/authors.json');
+    const ad = await ar.json();
+    ad.forEach(a => allAuthors[a.name] = a);
+
+    document.getElementById('statPoems').textContent = allPoems.length.toLocaleString() + ' 首';
+    document.getElementById('statAuthors').textContent = Object.keys(allAuthors).length.toLocaleString() + ' 位';
 
     fuse = new Fuse(allPoems, {
       keys: ['title','author','content','tags','form'],
