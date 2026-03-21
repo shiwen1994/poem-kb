@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>苏轼 · 大江东去</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Noto Serif SC","PingFang SC","Microsoft YaHei",serif;background:#0a0a12;color:#e8d5b0;min-height:100vh;overflow-x:hidden}
+
+/* 顶部大图区 */
+.hero{position:relative;height:52vh;min-height:340px;max-height:480px;overflow:hidden}
+.hero-bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 60% 40%, #1a1528 0%, #0a0a12 70%);
+  display:flex;align-items:flex-end;justify-content:center;
+}
+.hero-pattern{
+  position:absolute;inset:0;opacity:0.08;
+  background-image:
+    repeating-linear-gradient(45deg, transparent, transparent 30px, rgba(212,168,67,0.3) 30px, rgba(212,168,67,0.3) 31px),
+    repeating-linear-gradient(-45deg, transparent, transparent 30px, rgba(212,168,67,0.3) 30px, rgba(212,168,67,0.3) 31px);
+}
+.hero-moon{
+  position:absolute;top:12%;right:18%;
+  width:70px;height:70px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, #f5e6c0, #d4a843);
+  box-shadow:0 0 40px rgba(212,168,67,0.4), 0 0 80px rgba(212,168,67,0.15);
+}
+.hero-water{
+  position:absolute;bottom:0;left:0;right:0;height:40%;
+  background:linear-gradient(to top, #0a0a12, transparent);
+}
+.hero-content{position:relative;z-index:2;padding:0 24px 28px;text-align:center}
+.hero-chr{font-size:80px;font-weight:300;color:#d4a843;letter-spacing:16px;opacity:0.9;line-height:1}
+.hero-name{font-size:22px;color:#d4a843;letter-spacing:10px;margin-top:6px;font-weight:300;opacity:0.8}
+.hero-dynasty{font-size:13px;color:#888;letter-spacing:4px;margin-top:4px}
+.hero-desc{font-size:12px;color:#666;margin-top:10px;line-height:1.8;max-width:320px;margin:10px auto 0}
+
+/* 统计栏 */
+.stats{background:rgba(212,168,67,0.06);padding:14px 20px;display:flex;justify-content:center;gap:32px;font-size:13px;color:#888}
+.stats span{color:#d4a843}
+
+/* 搜索 */
+.search-wrap{padding:16px 20px 4px}
+.search-box{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(255,255,255,0.05);border:1px solid rgba(212,168,67,0.2);
+  border-radius:24px;padding:12px 18px;
+}
+.search-box:focus-within{border-color:#d4a843}
+.search-icon{color:#666;font-size:16px;flex-shrink:0}
+#searchInput{
+  flex:1;background:none;border:none;outline:none;
+  color:#e8d5b0;font-size:15px;font-family:inherit;
+}
+#searchInput::placeholder{color:#555}
+
+/* 词牌分类 */
+.categories{padding:12px 20px 4px;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}
+.categories::-webkit-scrollbar{display:none}
+.cat-btn{
+  display:inline-block;padding:6px 16px;margin-right:8px;
+  background:rgba(255,255,255,0.04);border:1px solid rgba(212,168,67,0.15);
+  border-radius:20px;color:#666;font-size:13px;cursor:pointer;transition:all 0.2s;
+}
+.cat-btn.active,.cat-btn:active{background:rgba(212,168,67,0.15);border-color:#d4a843;color:#d4a843}
+
+/* 结果计数 */
+.result-count{padding:8px 24px 4px;font-size:12px;color:#555}
+
+/* 诗词列表 */
+.poem-list{padding:8px 16px 100px}
+.poem-card{
+  background:rgba(255,255,255,0.03);border:1px solid rgba(212,168,67,0.1);
+  border-radius:14px;padding:18px 20px;margin-bottom:12px;
+  cursor:pointer;transition:all 0.2s;
+}
+.poem-card:active{transform:scale(0.98);background:rgba(212,168,67,0.06)}
+.card-title{font-size:18px;color:#d4a843;margin-bottom:6px;letter-spacing:2px}
+.card-meta{font-size:12px;color:#666;margin-bottom:10px}
+.card-excerpt{
+  font-size:15px;color:#aaa;line-height:1.9;letter-spacing:1px;
+  border-left:2px solid rgba(212,168,67,0.2);padding-left:12px;
+}
+.card-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.tag{
+  padding:2px 8px;background:rgba(196,30,58,0.1);border:1px solid rgba(196,30,58,0.2);
+  border-radius:10px;color:#c41e3a;font-size:11px;
+}
+
+/* 详情弹窗 */
+.modal{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);
+  z-index:1000;overflow-y:auto;
+}
+.modal.show{display:block}
+.modal-inner{
+  max-width:600px;margin:0 auto;padding:20px;
+}
+.poem-detail{
+  background:#16141e;border:1px solid rgba(212,168,67,0.2);
+  border-radius:18px;padding:28px 24px;position:relative;
+  min-height:80vh;
+}
+.poem-close{
+  position:absolute;top:14px;right:18px;
+  font-size:28px;color:#555;cursor:pointer;background:none;border:none;line-height:1;
+}
+.poem-close:active{color:#d4a843}
+.detail-title{font-size:26px;color:#d4a843;letter-spacing:4px;text-align:center;margin-bottom:6px}
+.detail-meta{font-size:13px;color:#888;text-align:center;margin-bottom:24px}
+.detail-content{
+  font-size:19px;line-height:2.2;color:#e8d5b0;
+  text-align:center;letter-spacing:3px;margin:20px 0;
+}
+.detail-divider{text-align:center;color:#333;margin:20px 0;font-size:14px;letter-spacing:8px}
+.detail-section{margin-top:20px}
+.detail-section h4{color:#c41e3a;font-size:13px;font-weight:400;margin-bottom:8px}
+.detail-desc{font-size:14px;color:#888;line-height:1.8}
+.detail-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.back-btn{
+  display:block;width:100%;padding:14px;margin-top:20px;
+  background:rgba(212,168,67,0.1);border:1px solid rgba(212,168,67,0.2);
+  border-radius:12px;color:#d4a843;font-size:15px;cursor:pointer;
+  text-align:center;background:none;border:none;font-family:inherit;
+}
+.back-btn:active{background:rgba(212,168,67,0.15)}
+
+/* 加载 */
+.loading{padding:60px 0;text-align:center;color:#555;font-size:14px}
+.loading::after{content:"...";animation:dots 1.5s infinite}
+@keyframes dots{0%,20%{content:"."}40%{content:".."}60%,100%{content:"..."}}
+.empty{padding:60px 0;text-align:center;color:#444;font-size:14px}
+
+/* 底部占位 */
+.bottom-spacer{height:80px}
+</style>
+</head>
+<body>
+
+<!-- 顶部大图区 -->
+<div class="hero">
+  <div class="hero-bg">
+    <div class="hero-pattern"></div>
+    <div class="hero-moon"></div>
+    <div class="hero-water"></div>
+  </div>
+  <div class="hero-content">
+    <div class="hero-chr">苏</div>
+    <div class="hero-name">轼</div>
+    <div class="hero-dynasty">宋代 · 1037-1101</div>
+    <div class="hero-desc">大江东去，浪淘尽，千古风流人物。<br>竹杖芒鞋轻胜马，谁怕？一蓑烟雨任平生。</div>
+  </div>
+</div>
+
+<!-- 统计 -->
+<div class="stats">
+  <span id="poemCount">362</span> <span>首</span>
+  <span>·</span>
+  <span>词 · 诗 · 文</span>
+</div>
+
+<!-- 搜索 -->
+<div class="search-wrap">
+  <div class="search-box">
+    <span class="search-icon">⌕</span>
+    <input id="searchInput" placeholder="搜索诗句、词牌…" autocomplete="off">
+  </div>
+</div>
+
+<!-- 分类 -->
+<div class="categories" id="categories">
+  <span class="cat-btn active" data-cat="全部">全部</span>
+</div>
+
+<!-- 结果 -->
+<div class="result-count" id="resultCount"></div>
+<div class="poem-list" id="poemList"></div>
+<div class="bottom-spacer"></div>
+
+<!-- 详情弹窗 -->
+<div class="modal" id="poemModal">
+  <div class="modal-inner">
+    <div class="poem-detail">
+      <button class="poem-close" onclick="closeModal()">×</button>
+      <div class="detail-title" id="dTitle"></div>
+      <div class="detail-meta" id="dMeta"></div>
+      <div class="detail-content" id="dContent"></div>
+      <div class="detail-divider">· · ·</div>
+      <div class="detail-section" id="dTagsSection">
+        <h4>词牌</h4>
+        <div class="detail-tags" id="dTags"></div>
+      </div>
+      <div class="detail-section" id="dDescSection">
+        <h4>赏析</h4>
+        <div class="detail-desc" id="dDesc"></div>
+      </div>
+      <button class="back-btn" onclick="closeModal()">← 返回列表</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── 数据加载 ───
+let allPoems = [];
+let fuse = null;
+let currentCat = '全部';
+let currentQuery = '';
+
+async function loadData() {
+  try {
+    const r = await fetch('http://118.196.82.179/poem-data/sushi.json');
+    const data = await r.json();
+    allPoems = data.poems || [];
+    document.getElementById('poemCount').textContent = allPoems.length;
+
+    // 初始化分类
+    initCategories();
+
+    // 初始化搜索
+    fuse = new Fuse(allPoems, {
+      keys: ['title','content','form'],
+      threshold: 0.4,
+      minMatchCharLength: 1
+    });
+
+    renderPoems();
+  } catch(e) {
+    document.getElementById('poemList').innerHTML = '<div class="empty">数据加载失败</div>';
+    console.error(e);
+  }
+}
+
+// ─── 分类 ───
+function initCategories() {
+  const forms = {};
+  allPoems.forEach(p => { const f = p.form || '其他'; forms[f] = (forms[f]||0)+1; });
+  const sorted = Object.entries(forms).sort((a,b) => b[1]-a[1]);
+  const container = document.getElementById('categories');
+  container.innerHTML = '';
+  ['全部'].concat(sorted.map(([f]) => f)).forEach(cat => {
+    const btn = document.createElement('span');
+    btn.className = 'cat-btn' + (cat === '全部' ? ' active' : '');
+    btn.dataset.cat = cat;
+    btn.textContent = cat + (cat !== '全部' ? ` (${forms[cat]})` : '');
+    btn.onclick = () => selectCat(cat);
+    container.appendChild(btn);
+  });
+}
+
+function selectCat(cat) {
+  currentCat = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
+  renderPoems();
+}
+
+// ─── 搜索 ───
+document.getElementById('searchInput').addEventListener('input', () => {
+  currentQuery = document.getElementById('searchInput').value.trim();
+  renderPoems();
+});
+
+// ─── 渲染 ───
+function getFiltered() {
+  let poems = allPoems;
+  if (currentCat !== '全部') poems = poems.filter(p => p.form === currentCat);
+  if (currentQuery) poems = fuse.search(currentQuery).map(r => r.item);
+  return poems;
+}
+
+function renderPoems() {
+  const poems = getFiltered();
+  document.getElementById('resultCount').textContent = poems.length ? `${poems.length} 首` : '';
+  const list = document.getElementById('poemList');
+  if (!poems.length) { list.innerHTML = '<div class="empty">无结果</div>'; return; }
+  list.innerHTML = poems.slice(0,100).map(p => `
+    <div class="poem-card" onclick="openPoem(${p.id})">
+      <div class="card-title">${p.title || '无题'}</div>
+      <div class="card-meta">${p.form || '诗'} · ${p.dynasty || '宋'}</div>
+      <div class="card-excerpt">${(p.content||'').substring(0,40)}…</div>
+      ${p.tags&&p.tags.length ? `<div class="card-tags">${p.tags.slice(0,3).map(t=>`<span class="tag">${t}</span>`).join('')}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+// ─── 详情 ───
+function openPoem(id) {
+  const p = allPoems.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('dTitle').textContent = p.title || '无题';
+  document.getElementById('dMeta').textContent = `${p.form || '诗'} · ${p.dynasty || '宋'}`;
+  document.getElementById('dContent').textContent = p.content || '';
+  document.getElementById('dDesc').textContent = p.desc || '暂无赏析';
+  document.getElementById('dTags').innerHTML = (p.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('');
+  document.getElementById('dDescSection').style.display = p.desc ? 'block' : 'none';
+  document.getElementById('poemModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('poemModal').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+// 点击背景关闭
+document.getElementById('poemModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// 首次渲染 & DOMContentLoaded
+document.addEventListener('DOMContentLoaded', loadData);
+</script>
+</body>
+</html>
