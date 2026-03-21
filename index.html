@@ -251,19 +251,20 @@ async function loadData() {
   try {
     // 从云服务器API加载全量数据
     const API = 'http://118.196.82.179/api';
-    const resp = await fetch(`${API}/poems?limit=1000`);
-    const data = await resp.json();
-    allPoems = data.data || [];
-
-    // 获取诗人信息
-    try {
-      const ar = await fetch(`${API}/authors?limit=1000`);
-      const ad = await ar.json();
-      (ad.data || []).forEach(a => allAuthors[a.name] = a);
-    } catch(e) {}
-
-    document.getElementById('statPoems').textContent = allPoems.length.toLocaleString() + ' 首';
-    document.getElementById('statAuthors').textContent = Object.keys(allAuthors).length.toLocaleString() + ' 位';
+    
+    // 并行请求诗词数据和诗人数据
+    const [poemsResp, statsResp] = await Promise.all([
+      fetch(`${API}/poems?limit=1000`),
+      fetch(`${API}/stats`)
+    ]);
+    
+    const poemsData = await poemsResp.json();
+    const statsData = await statsResp.json();
+    
+    allPoems = poemsData.data || [];
+    
+    document.getElementById('statPoems').textContent = (statsData.total_poems || allPoems.length).toLocaleString() + ' 首';
+    document.getElementById('statAuthors').textContent = (statsData.total_authors || 0).toLocaleString() + ' 位';
 
     fuse = new Fuse(allPoems, {
       keys: ['title','author','content','tags','form'],
