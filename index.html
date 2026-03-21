@@ -249,27 +249,20 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadData() {
   showLoading();
   try {
-    const parts = [];
-    for (let i = 1; i <= 6; i++) {
-      const url = `https://cdn.jsdelivr.net/gh/shiwen1994/poem-kb@main/data/poems_part${i}.json`;
-      const r = await fetch(url);
-      const d = await r.json();
-      parts.push(...d);
-    }
-    allPoems = parts;
+    // TEST MODE: load single small file
+    const testUrl = 'https://cdn.jsdelivr.net/gh/shiwen1994/poem-kb@main/poems_test.json';
+    const tr = await fetch(testUrl);
+    allPoems = await tr.json();
 
-    const ar = await fetch('https://cdn.jsdelivr.net/gh/shiwen1994/poem-kb@main/data/authors.json');
-    const ad = await ar.json();
-    ad.forEach(a => allAuthors[a.name] = a);
-
-    document.getElementById('statPoems').textContent = allPoems.length.toLocaleString() + ' 首';
-    document.getElementById('statAuthors').textContent = Object.keys(allAuthors).length.toLocaleString() + ' 位';
+    document.getElementById('statPoems').textContent = allPoems.length + ' 首（测试模式）';
+    document.getElementById('statAuthors').textContent = '- 位';
 
     fuse = new Fuse(allPoems, {
       keys: ['title','author','content','tags','form'],
       threshold: 0.4,
       minMatchCharLength: 1
     });
+    renderResults();
     renderResults();
   } catch(e) {
     console.error(e);
