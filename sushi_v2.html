@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>苏轼词选注</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Noto Serif SC","PingFang SC","Microsoft YaHei",serif;background:#faf9f7;color:#2a2a2a;min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* topbar */
+.tb{position:fixed;top:0;left:0;right:0;z-index:200;height:56px;background:rgba(250,249,247,0.96);backdrop-filter:blur(12px);border-bottom:1px solid rgba(0,0,0,0.06);display:flex;align-items:center;padding:0 16px;gap:12px}
+.tb-back{width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,0.05);border:none;cursor:pointer;font-size:16px;color:#555;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tb-title{flex:1;text-align:center;font-size:15px;font-weight:400;color:#1a1a1a;letter-spacing:3px}
+.tb-btn{width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,0.05);border:none;cursor:pointer;font-size:15px;color:#555;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* header */
+.hdr{margin-top:56px;background:#fff;border-bottom:1px solid rgba(0,0,0,0.06);padding:28px 24px 20px}
+.hdr-era{font-size:11px;color:#c41e3a;letter-spacing:2px;margin-bottom:8px}
+.hdr-title{font-size:30px;font-weight:600;color:#1a1a1a;letter-spacing:4px;line-height:1.2}
+.hdr-sub{font-size:13px;color:#bbb;margin-top:6px;letter-spacing:2px}
+.hdr-desc{margin-top:14px;font-size:14px;color:#888;line-height:2;letter-spacing:1px;font-weight:300;border-left:3px solid rgba(196,30,58,0.2);padding-left:14px}
+.hdr-tags{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+.hdr-tag{padding:4px 12px;background:#f5f3ee;border:1px solid rgba(0,0,0,0.07);border-radius:20px;font-size:12px;color:#888}
+
+/* list */
+.list{padding:16px 16px 100px}
+.poem-card{background:#fff;border-radius:14px;padding:18px 20px;margin-bottom:12px;border:1px solid rgba(0,0,0,0.06);cursor:pointer;transition:all .15s}
+.poem-card:active{transform:scale(0.98);box-shadow:0 4px 16px rgba(0,0,0,0.1)}
+.card-title{font-size:17px;color:#1a1a1a;letter-spacing:2px;margin-bottom:4px;font-weight:600}
+.card-form{font-size:12px;color:#bbb;margin-bottom:12px;letter-spacing:1px}
+.card-ann{font-size:15px;color:#444;line-height:2.2;letter-spacing:2px;margin-bottom:12px;min-height:60px}
+
+/* entity highlighting - shiji-kb style */
+.ent{padding:0 1px;border-radius:2px;cursor:default}
+.ent-place{color:#8B6914;font-weight:600;text-decoration:underline;text-decoration-style:double;text-decoration-color:#8B6914;text-underline-offset:3px;background:rgba(139,105,20,0.06)}
+.ent-person{color:#8B4513;font-weight:600;text-decoration:underline;text-decoration-style:solid;text-decoration-color:#8B4513;text-underline-offset:3px;background:rgba(139,69,19,0.06)}
+.ent-myth{color:#6B0F6B;font-weight:600;font-style:italic;text-decoration:underline;text-decoration-style:wavy;text-decoration-color:#6B0F6B;text-underline-offset:3px;background:rgba(107,15,107,0.05)}
+.ent-imag{color:#2E4B8F;font-style:italic;text-decoration:underline;text-decoration-style:dashed;text-decoration-color:#2E4B8F;text-underline-offset:3px;background:rgba(46,75,143,0.05)}
+
+.card-tags{display:flex;gap:6px;flex-wrap:wrap}
+.badge{padding:2px 8px;border-radius:10px;font-size:11px}
+.badge-form{background:rgba(0,0,0,0.04);color:#888;border:1px solid rgba(0,0,0,0.08)}
+
+/* legend */
+.legend{padding:0 16px 8px;display:flex;gap:12px;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#999}
+.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+/* modal */
+.modal{display:none;position:fixed;inset:0;z-index:400;background:#faf9f7;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.modal.open{display:block}
+.mc{padding:16px 20px 60px;max-width:640px;margin:0 auto}
+.mhd{padding:32px 0 20px;border-bottom:1px solid rgba(0,0,0,0.06)}
+.mtitle{font-size:26px;color:#1a1a1a;letter-spacing:4px;font-weight:600;text-align:center}
+.mmeta{font-size:12px;color:#bbb;margin-top:8px;text-align:center;letter-spacing:2px}
+.mann{font-size:17px;line-height:2.8;color:#2a2a2a;letter-spacing:4px;text-align:center;padding:28px 0;border-bottom:1px solid rgba(0,0,0,0.06)}
+.msep{text-align:center;color:#ddd;letter-spacing:16px;font-size:16px;padding:16px 0}
+.mnote{margin-top:20px;padding:16px;background:rgba(196,30,58,0.04);border:1px solid rgba(196,30,58,0.1);border-radius:12px}
+.mnote-hd{font-size:11px;color:#c41e3a;letter-spacing:2px;margin-bottom:8px}
+.mnote-txt{font-size:14px;color:#777;line-height:2;letter-spacing:0.5px}
+.mtags{margin-top:12px;display:flex;gap:6px;flex-wrap:wrap}
+.mtag{padding:3px 10px;background:rgba(0,0,0,0.04);border:1px solid rgba(0,0,0,0.08);border-radius:10px;font-size:11px;color:#888}
+.mclose{display:block;width:100%;padding:14px;margin-top:24px;background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;font-size:14px;color:#555;cursor:pointer;letter-spacing:2px;background:none;font-family:inherit}
+.mclose:active{background:rgba(0,0,0,0.04)}
+
+/* index panel */
+.iover{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.3)}
+.iover.show{display:block}
+.ipanel{position:fixed;top:0;right:0;bottom:0;z-index:301;width:min(360px,90vw);background:#fff;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:-4px 0 40px rgba(0,0,0,0.1)}
+.ipanel.open{transform:translateX(0)}
+.ihd{padding:16px 20px 12px;border-bottom:1px solid rgba(0,0,0,0.07);display:flex;align-items:center;justify-content:space-between}
+.ihd-t{font-size:16px;font-weight:600;color:#1a1a1a;letter-spacing:4px}
+.iclose{width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,0.05);border:none;cursor:pointer;font-size:18px;color:#888;display:flex;align-items:center;justify-content:center}
+
+/* idx tabs */
+.tabs{display:flex;border-bottom:1px solid rgba(0,0,0,0.07);flex-shrink:0}
+.tab{flex:1;padding:10px 0;font-size:12px;color:#888;background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+.tab.on{color:#1a1a1a;border-bottom-color:#1a1a1a;font-weight:600}
+
+.ibody{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.ibody::-webkit-scrollbar{width:3px}
+.ibody::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.08);border-radius:2px}
+.isec{margin-bottom:2px}
+.ishd{padding:10px 20px 4px;font-size:11px;color:#bbb;letter-spacing:2px;text-transform:uppercase}
+.ilist{padding:0 12px 4px}
+.idx-item{display:flex;align-items:center;justify-content:space-between;padding:11px 10px;border-radius:8px;cursor:pointer;transition:background .15s;font-size:14px;color:#2a2a2a;letter-spacing:1px}
+.idx-item:active{background:rgba(0,0,0,0.04)}
+.idx-item span:first-child{flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.ir{font-size:14px;color:#ccc;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<div class="tb">
+  <button class="tb-back" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+  <div class="tb-title">苏轼词选注</div>
+  <button class="tb-btn" id="idxBtn">☰</button>
+</div>
+
+<div class="hdr">
+  <div class="hdr-era">宋</div>
+  <div class="hdr-title">苏轼词选注</div>
+  <div class="hdr-sub">1037 — 1101 · 5首精选 · 标注版</div>
+  <div class="hdr-desc">大江东去，浪淘尽，千古风流人物。<br>竹杖芒鞋轻胜马，谁怕？一蓑烟雨任平生。</div>
+  <div class="hdr-tags">
+    <span class="hdr-tag">词</span><span class="hdr-tag">怀古</span><span class="hdr-tag">哲理</span><span class="hdr-tag">悼亡</span><span class="hdr-tag">标注</span>
+  </div>
+</div>
+
+<div class="legend">
+  <div class="leg-item"><div class="leg-dot" style="background:rgba(139,69,19,0.6)"></div>人物</div>
+  <div class="leg-item"><div class="leg-dot" style="background:rgba(139,105,20,0.6)"></div>地名</div>
+  <div class="leg-item"><div class="leg-dot" style="background:rgba(46,75,143,0.7)"></div>意象/典故</div>
+  <div class="leg-item"><div class="leg-dot" style="background:rgba(107,15,107,0.6)"></div>历史典故</div>
+</div>
+
+<div class="list" id="list">
+    <div class="poem-card" onclick="openPoem('song_ci_ci.song.1000.json_467')">
+      <div class="card-title">《念奴娇·赤壁怀古》</div>
+      <div class="card-form">念奴娇 · 宋</div>
+      <div class="card-ann">大江东去，浪淘尽、千古风流人物。故垒西边人道是，<span class="ent ent-myth">三国</span>周郎<span class="ent ent-place">赤壁</span>。乱石穿空，惊涛拍岸，卷起千堆雪。江山如画，一时多少豪杰。遥想<span class="ent ent-person">周瑜</span>当年，小乔初嫁了，雄姿英发。羽扇纶巾谈笑间，强虏灰飞烟灭。故国神游，多情应笑，我早生华发。人间如梦，一尊还酹江月。</div>
+      <div class="card-tags"><span class="badge badge-form">念奴娇</span></div>
+    </div>
+    <div class="poem-card" onclick="openPoem('song_ci_ci.song.1000.json_459')">
+      <div class="card-title">《水调歌头·明月几时有》</div>
+      <div class="card-form">水调歌头 · 宋</div>
+      <div class="card-ann">明月几时有，把酒问青天。不知<span class="ent ent-imag">天上宫阙</span>，今夕是何年。我欲乘风归去，又恐琼楼玉宇，高处不胜寒。起舞弄清影，何似在人间。转朱阁，低绮户，照无眠。不应有恨，何事长向别时圆。人有悲欢离合，月有阴晴圆缺，此事古难全。但愿人长久，千里共婵娟。</div>
+      <div class="card-tags"><span class="badge badge-form">水调歌头</span></div>
+    </div>
+    <div class="poem-card" onclick="openPoem('song_ci_ci.song.1000.json_578')">
+      <div class="card-title">《江城子·十年生死》</div>
+      <div class="card-form">江神子・江城子 · 宋</div>
+      <div class="card-ann">十年生死两茫茫。不思量，自难忘。千里孤坟，无处话凄凉。纵使相逢应不识，尘满面，鬓如霜。夜来幽梦忽还乡。<span class="ent ent-place">小轩窗</span>，正梳妆。相顾无言，惟有泪千行。料得年年断肠处，<span class="ent ent-imag">明月夜</span>，短松冈。</div>
+      <div class="card-tags"><span class="badge badge-form">江神子・江城子</span></div>
+    </div>
+    <div class="poem-card" onclick="openPoem('song_ci_ci.song.1000.json_509')">
+      <div class="card-title">《定风波·莫听穿林打叶声》</div>
+      <div class="card-form">定风波 · 宋</div>
+      <div class="card-ann">莫听穿林打叶声，何妨吟啸且徐行。竹杖芒鞋轻胜马，谁怕？<span class="ent ent-imag">一蓑烟雨任平生</span>。<span class="ent ent-imag">也无风雨也无晴</span>。料峭春风吹酒醒，微冷，山头斜照却相迎。回首向来萧瑟处，归去，也无风雨也无晴。</div>
+      <div class="card-tags"><span class="badge badge-form">定风波</span></div>
+    </div>
+    <div class="poem-card" onclick="openPoem('song_ci_ci.song.1000.json_498')">
+      <div class="card-title">《临江仙·夜饮东坡醒复醉》</div>
+      <div class="card-form">临江仙 · 宋</div>
+      <div class="card-ann">夜饮<span class="ent ent-place">东坡</span>醒复醉，归来仿佛三更。家童鼻息已雷鸣，敲门都不应，倚杖听江声。长恨此身非我有，何时忘却营营。夜阑风静縠纹平，小舟从此逝，<span class="ent ent-imag">江海寄馀生</span>。</div>
+      <div class="card-tags"><span class="badge badge-form">临江仙</span></div>
+    </div></div>
+
+<!-- 索引面板 -->
+<div class="iover" id="iover">
+  <div class="ipanel" id="ipanel">
+    <div class="ihd"><span class="ihd-t">目录</span><button class="iclose" id="iclose">×</button></div>
+    <div class="tabs">
+      <button class="tab on" onclick="switchTab(this,'form')">词牌</button>
+      <button class="tab" onclick="switchTab(this,'figure')">人物</button>
+      <button class="tab" onclick="switchTab(this,'loc')">地点</button>
+    </div>
+    <div class="ibody">
+      <div id="tab-form"><div class="isec">
+  <div class="ishd">念奴娇（1首）</div>
+  <div class="ilist"><div class="idx-item" onclick="jumpTo('song_ci_ci.song.1000.json_467')"><span>《念奴娇·赤壁怀古》</span><span class="ir">›</span></div></div>
+</div><div class="isec">
+  <div class="ishd">水调歌头（1首）</div>
+  <div class="ilist"><div class="idx-item" onclick="jumpTo('song_ci_ci.song.1000.json_459')"><span>《水调歌头·明月几时有》</span><span class="ir">›</span></div></div>
+</div><div class="isec">
+  <div class="ishd">江神子・江城子（1首）</div>
+  <div class="ilist"><div class="idx-item" onclick="jumpTo('song_ci_ci.song.1000.json_578')"><span>《江城子·十年生死》</span><span class="ir">›</span></div></div>
+</div><div class="isec">
+  <div class="ishd">定风波（1首）</div>
+  <div class="ilist"><div class="idx-item" onclick="jumpTo('song_ci_ci.song.1000.json_509')"><span>《定风波·莫听穿林打叶声》</span><span class="ir">›</span></div></div>
+</div><div class="isec">
+  <div class="ishd">临江仙（1首）</div>
+  <div class="ilist"><div class="idx-item" onclick="jumpTo('song_ci_ci.song.1000.json_498')"><span>《临江仙·夜饮东坡醒复醉》</span><span class="ir">›</span></div></div>
+</div></div>
+      <div id="tab-figure" style="display:none"><div class="isec">
+  <div class="ishd">周公瑾（1首）</div>
+  <div class="ilist"><div class="idx-item" onclick="jumpTo('song_ci_ci.song.1000.json_467')"><span>《念奴娇·赤壁怀古》</span><span class="ir">›</span></div></div>
+</div></div>
+      <div id="tab-loc" style="display:none"><div class="isec">
+  <div class="ishd">故园窗前（1首）</div>
+  <div class="ilist"><div class="idx-item" onclick="jumpTo('song_ci_ci.song.1000.json_578')"><span>《江城子·十年生死》</span><span class="ir">›</span></div></div>
+</div><div class="isec">
+  <div class="ishd">赤壁战场（1首）</div>
+  <div class="ilist"><div class="idx-item" onclick="jumpTo('song_ci_ci.song.1000.json_467')"><span>《念奴娇·赤壁怀古》</span><span class="ir">›</span></div></div>
+</div><div class="isec">
+  <div class="ishd">黄州东坡（1首）</div>
+  <div class="ilist"><div class="idx-item" onclick="jumpTo('song_ci_ci.song.1000.json_498')"><span>《临江仙·夜饮东坡醒复醉》</span><span class="ir">›</span></div></div>
+</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 详情弹窗 -->
+<div class="modal" id="modal">
+  <div class="mc">
+    <div class="mhd">
+      <div class="mtitle" id="mTitle"></div>
+      <div class="mmeta" id="mMeta"></div>
+    </div>
+    <div class="mann" id="mAnn"></div>
+    <div class="msep">· · ·</div>
+    <div class="mnote" id="mNote">
+      <div class="mnote-hd">赏析</div>
+      <div class="mnote-txt" id="mNoteTxt"></div>
+    </div>
+    <div class="mtags" id="mTags"></div>
+    <button class="mclose" id="mClose">← 返回</button>
+  </div>
+</div>
+
+<script>
+const POEMS = [{"id": "song_ci_ci.song.1000.json_467", "title": "念奴娇·赤壁怀古", "form": "念奴娇", "dynasty": "宋", "note": "苏轼谪居黄州时所作，借周瑜少年成名抒发壮志难酬之感。豪放词开山之作，上阙写景，下阙怀古。", "tags": ["怀古", "战争", "山水"], "content": "大江东去，浪淘尽、千古风流人物。故垒西边人道是，三国周郎赤壁。乱石穿空，惊涛拍岸，卷起千堆雪。江山如画，一时多少豪杰。遥想公瑾当年，小乔初嫁了，雄姿英发。羽扇纶巾谈笑间，强虏灰飞烟灭。故国神游，多情应笑，我早生华发。人间如梦，一尊还酹江月。", "annotated": "大江东去，浪淘尽、千古风流人物。故垒西边人道是，『myth 三国』周郎『place 赤壁|赤壁战场』。乱石穿空，惊涛拍岸，卷起千堆雪。江山如画，一时多少豪杰。遥想『person 周瑜|周公瑾』当年，小乔初嫁了，雄姿英发。羽扇纶巾谈笑间，强虏灰飞烟灭。故国神游，多情应笑，我早生华发。人间如梦，一尊还酹江月。"}, {"id": "song_ci_ci.song.1000.json_459", "title": "水调歌头·明月几时有", "form": "水调歌头", "dynasty": "宋", "note": "中秋词千古第一，写给弟弟苏辙。意境超旷，哲理与抒情浑然一体。", "tags": ["思亲", "月", "哲理"], "content": "明月几时有，把酒问青天。不知天上宫阙，今夕是何年。我欲乘风归去，又恐琼楼玉宇，高处不胜寒。起舞弄清影，何似在人间。转朱阁，低绮户，照无眠。不应有恨，何事长向别时圆。人有悲欢离合，月有阴晴圆缺，此事古难全。但愿人长久，千里共婵娟。", "annotated": "明月几时有，把酒问青天。不知『imag 天上宫阙|月宫』，今夕是何年。我欲乘风归去，又恐琼楼玉宇，高处不胜寒。起舞弄清影，何似在人间。转朱阁，低绮户，照无眠。不应有恨，何事长向别时圆。人有悲欢离合，月有阴晴圆缺，此事古难全。但愿人长久，千里共婵娟。"}, {"id": "song_ci_ci.song.1000.json_578", "title": "江城子·十年生死", "form": "江神子・江城子", "dynasty": "宋", "note": "悼亡词第一，深情刻骨，纪念亡妻王弗。上阙写生死茫茫之痛，下阙记梦中相见。", "tags": ["爱情", "思亲", "月"], "content": "十年生死两茫茫。不思量，自难忘。千里孤坟，无处话凄凉。纵使相逢应不识，尘满面，鬓如霜。夜来幽梦忽还乡。小轩窗，正梳妆。相顾无言，惟有泪千行。料得年年断肠处，明月夜，短松冈。", "annotated": "十年生死两茫茫。不思量，自难忘。千里孤坟，无处话凄凉。纵使相逢应不识，尘满面，鬓如霜。夜来幽梦忽还乡。『place 小轩窗|故园窗前』，正梳妆。相顾无言，惟有泪千行。料得年年断肠处，『imag 明月夜|月夜』，短松冈。"}, {"id": "song_ci_ci.song.1000.json_509", "title": "定风波·莫听穿林打叶声", "form": "定风波", "dynasty": "宋", "note": "黄州时期代表作，体现苏轼随遇而安的旷达哲学。三月七日沙湖遇雨，借题发挥，表达不惧风雨、泰然自若的人生态度。", "tags": ["哲理", "黄州时期", "酒"], "content": "莫听穿林打叶声，何妨吟啸且徐行。竹杖芒鞋轻胜马，谁怕？一蓑烟雨任平生。料峭春风吹酒醒，微冷，山头斜照却相迎。回首向来萧瑟处，归去，也无风雨也无晴。", "annotated": "莫听穿林打叶声，何妨吟啸且徐行。竹杖芒鞋轻胜马，谁怕？『imag 一蓑烟雨任平生|人生态度』。『imag 也无风雨也无晴|超然物外』。料峭春风吹酒醒，微冷，山头斜照却相迎。回首向来萧瑟处，归去，也无风雨也无晴。"}, {"id": "song_ci_ci.song.1000.json_498", "title": "临江仙·夜饮东坡醒复醉", "form": "临江仙", "dynasty": "宋", "note": "黄州时期夜饮东坡所作，'小舟从此逝，江海寄余生'为归隐名句。表面写酒，实写人生解脱之志，超然旷达。", "tags": ["黄州时期", "酒", "哲理"], "content": "夜饮东坡醒复醉，归来仿佛三更。家童鼻息已雷鸣，敲门都不应，倚杖听江声。长恨此身非我有，何时忘却营营。夜阑风静縠纹平，小舟从此逝，江海寄馀生。", "annotated": "夜饮『place 东坡|黄州东坡』醒复醉，归来仿佛三更。家童鼻息已雷鸣，敲门都不应，倚杖听江声。长恨此身非我有，何时忘却营营。夜阑风静縠纹平，小舟从此逝，『imag 江海寄馀生|归隐之志』。"}];
+
+function openPoem(id) {
+  const p = POEMS.find(x => x.id === id);
+  if(!p) return;
+  document.getElementById('mTitle').textContent = '《' + p.title + '》';
+  document.getElementById('mMeta').textContent = p.form + ' · ' + p.dynasty;
+  document.getElementById('mAnn').innerHTML = renderAnn(p.annotated || p.content);
+  document.getElementById('mNoteTxt').textContent = p.note || '';
+  const tags = (p.tags||[]).map(t => '<span class="mtag">'+t+'</span>').join('');
+  document.getElementById('mTags').innerHTML = tags;
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function renderAnn(text) {
+  let t = text;
+  t = t.replace(/『myth ([^『』]+?)(?:\|([^』]+))?』/g, '<span class="ent ent-myth">$1</span>');
+  t = t.replace(/『place ([^『』]+?)(?:\|([^』]+))?』/g, '<span class="ent ent-place">$1</span>');
+  t = t.replace(/『imag ([^『』]+?)(?:\|([^』]+))?』/g, '<span class="ent ent-imag">$1</span>');
+  t = t.replace(/『person ([^『』]+?)(?:\|([^』]+))?』/g, '<span class="ent ent-person">$1</span>');
+  return t;
+}
+
+function jumpTo(id) {
+  closeIdx();
+  setTimeout(() => openPoem(id), 150);
+}
+
+document.getElementById('mClose').onclick = closeModal;
+document.getElementById('modal').addEventListener('click', e => { if(e.target===document.getElementById('modal')) closeModal(); });
+
+document.getElementById('idxBtn').onclick = () => {
+  document.getElementById('iover').classList.add('show');
+  document.getElementById('ipanel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+};
+function closeIdx() {
+  document.getElementById('iover').classList.remove('show');
+  document.getElementById('ipanel').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.getElementById('iclose').onclick = closeIdx;
+document.getElementById('iover').addEventListener('click', e => { if(e.target===document.getElementById('iover')) closeIdx(); });
+
+function switchTab(el, tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('tab-form').style.display = tab==='form' ? 'block' : 'none';
+  document.getElementById('tab-figure').style.display = tab==='figure' ? 'block' : 'none';
+  document.getElementById('tab-loc').style.display = tab==='loc' ? 'block' : 'none';
+}
+</script>
+</body>
+</html>
