@@ -249,19 +249,13 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadData() {
   showLoading();
   try {
-    const parts = [];
-    for (let i = 1; i <= 6; i++) {
-      updateLoading(`加载诗词数据... (${i}/6)`);
-      const url = `https://cdn.jsdelivr.net/gh/shiwen1994/poem-kb@main/data/poems_part${i}.json`;
-      const r = await fetch(url);
-      const d = await r.json();
-      parts.push(...d);
-    }
-    allPoems = parts;
-
-    updateLoading('加载诗人数据...');
-    const ar = await fetch('https://cdn.jsdelivr.net/gh/shiwen1994/poem-kb@main/data/authors.json');
-    const ad = await ar.json();
+    updateLoading('加载诗词数据...');
+    const [poemsResp, authorsResp] = await Promise.all([
+      fetch('http://118.196.82.179/poem-data/poems_all.json'),
+      fetch('http://118.196.82.179/poem-data/authors.json')
+    ]);
+    allPoems = await poemsResp.json();
+    const ad = await authorsResp.json();
     ad.forEach(a => allAuthors[a.name] = a);
 
     document.getElementById('statPoems').textContent = allPoems.length.toLocaleString() + ' 首';
