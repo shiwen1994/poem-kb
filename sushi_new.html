@@ -397,7 +397,7 @@ document.getElementById('searchInput').addEventListener('input', function(){
 async function loadData() {
   document.getElementById('poemList').innerHTML = '<div class="loading">正在加载诗词数据</div>';
   try {
-    const r = await fetch('http://118.196.82.179/poem-data/sushi.json');
+    const r = await fetch('https://raw.githubusercontent.com/shiwen1994/poem-kb/main/data/sushi.json');
     const data = await r.json();
     allPoems = data.poems || [];
     author = data.author || {};
