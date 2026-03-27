@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>苏轼 · 知识库</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0c10;--card:#13141c;--text:#e8d5b0;--accent:#c9a84c;--person:#b87333;--place:#7a9e7a;--allusion:#8b5cf6;--form:#e07b39;--border:rgba(201,168,76,.1);--note:#1a1a10;--panel:#111218}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:"Noto Serif SC","PingFang SC",serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;line-height:1.7}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:500;height:52px;background:rgba(11,12,16,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:10px}
+.topbar-title{flex:1;text-align:center;font-size:14px;letter-spacing:3px;color:var(--text)}
+.topbar-btn{width:44px;height:44px;border-radius:50%;background:transparent;border:none;cursor:pointer;font-size:18px;color:#555;display:flex;align-items:center;justify-content:center}
+.hero{margin-top:52px;padding:48px 24px 36px;text-align:center;background:linear-gradient(180deg,#13141c 0%,var(--bg) 100%);border-bottom:1px solid var(--border)}
+.hero-chr{font-size:72px;font-weight:300;color:var(--accent);letter-spacing:20px;line-height:1;opacity:.9}
+.hero-name{font-size:20px;color:var(--accent);letter-spacing:12px;margin-top:8px;font-weight:300;opacity:.8}
+.hero-dates{font-size:12px;color:#444;letter-spacing:4px;margin-top:6px}
+.hero-quote{max-width:360px;margin:20px auto 0;font-size:13px;color:#555;line-height:2;letter-spacing:1px;font-weight:300;border-left:2px solid rgba(201,168,76,.2);padding-left:14px;text-align:left}
+.stats-bar{display:flex;justify-content:center;gap:20px;padding:14px 20px;background:rgba(201,168,76,.04);border-bottom:1px solid var(--border);font-size:13px;color:#444}
+.stats-bar span{color:var(--accent)}
+.search-section{padding:14px 16px 6px}
+.search-box{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:24px;padding:11px 16px}
+.search-box:focus-within{border-color:rgba(201,168,76,.4)}
+#searchInput{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:14px;font-family:inherit;letter-spacing:1px}
+#searchInput::placeholder{color:#444}
+.categories{padding:10px 16px 4px;display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.categories::-webkit-scrollbar{display:none}
+.cat-btn{flex-shrink:0;display:inline-block;padding:6px 14px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:20px;color:#555;font-size:12px;cursor:pointer;transition:all .2s;white-space:nowrap;font-family:inherit}
+.cat-btn.active,.cat-btn:active{background:rgba(201,168,76,.12);border-color:rgba(201,168,76,.4);color:var(--accent)}
+.result-count{padding:8px 20px 4px;font-size:12px;color:#444}
+.poem-list{padding:6px 16px 120px}
+.poem-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:12px;cursor:pointer;transition:all .2s}
+.poem-card:active{transform:scale(.985);background:rgba(201,168,76,.05)}
+.card-top{display:flex;align-items:baseline;gap:8px;margin-bottom:4px}
+.card-title{font-size:17px;color:var(--accent);letter-spacing:2px;font-weight:400}
+.card-form{font-size:11px;color:#444;letter-spacing:1px;margin-left:auto;flex-shrink:0}
+.card-meta{font-size:11px;color:#444;margin-bottom:10px;letter-spacing:.5px}
+.card-snippet{font-size:14px;color:#666;line-height:1.9;letter-spacing:.5px;border-left:2px solid rgba(201,168,76,.15);padding-left:12px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.card-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}
+.tag{padding:2px 8px;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.15);border-radius:10px;color:var(--accent);font-size:11px}
+.layer-badges{display:flex;gap:4px;flex-wrap:wrap;margin-top:10px}
+.layer-badge{padding:2px 8px;border-radius:6px;font-size:10px;color:var(--accent);background:rgba(201,168,76,.08);border:1px solid var(--border)}
+.layer-overlay{display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.3)}
+.layer-overlay.show{display:block}
+.layer-panel{position:fixed;top:0;right:0;bottom:0;z-index:601;width:min(480px,95vw);background:var(--panel);transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:-4px 0 40px rgba(0,0,0,.3)}
+.layer-panel.open{transform:translateX(0)}
+.layer-hd{padding:14px 20px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.layer-hd-title{flex:1;font-size:15px;font-weight:400;letter-spacing:4px;color:var(--accent)}
+.layer-close{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.04);border:none;cursor:pointer;font-size:18px;color:#555;display:flex;align-items:center;justify-content:center}
+.layer-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto}
+.layer-tabs::-webkit-scrollbar{display:none}
+.layer-tab{flex-shrink:0;padding:10px 14px;font-size:12px;color:#555;background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-family:inherit;letter-spacing:1px;white-space:nowrap}
+.layer-tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.layer-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px}
+.layer-body::-webkit-scrollbar{width:3px}
+.layer-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.06);border-radius:2px}
+.ly-head{margin-bottom:20px}
+.ly-form{font-size:11px;color:var(--accent);letter-spacing:2px;margin-bottom:6px;opacity:.7}
+.ly-title{font-size:22px;color:var(--accent);letter-spacing:4px;font-weight:300;line-height:1.6}
+.ly-meta{font-size:12px;color:#444;margin-top:6px;letter-spacing:.5px}
+.ly-sep{height:1px;background:linear-gradient(to right,rgba(201,168,76,.15),transparent);margin:18px 0}
+.orig-block{font-size:18px;line-height:2.4;color:var(--text);letter-spacing:2px;font-weight:300}
+.orig-block p{margin-bottom:14px}
+.orig-block .e{padding:0 1px;border-radius:2px;cursor:help;text-decoration:underline;text-decoration-style:solid;text-underline-offset:3px}
+.orig-block .e-person{color:var(--person);text-decoration-color:var(--person);background:rgba(184,115,51,.06)}
+.orig-block .e-place{color:var(--place);text-decoration-color:var(--place);background:rgba(122,158,122,.06)}
+.orig-block .e-allusion{color:var(--allusion);text-decoration-color:var(--allusion);background:rgba(139,91,246,.06)}
+.bai-block{font-size:14px;line-height:2.2;color:#999;letter-spacing:.5px;padding:16px;background:var(--note);border-radius:12px;border-left:3px solid rgba(201,168,76,.3)}
+.bai-block p{margin-bottom:10px}
+.shang-block{font-size:14px;line-height:2.2;color:#888}
+.shang-item{margin-bottom:14px;padding:12px 16px;background:rgba(255,255,255,.02);border-radius:10px;border:1px solid var(--border)}
+.shang-item .exp{font-size:13px;color:#777;line-height:1.8}
+.dian-block{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dian-card{background:rgba(139,91,246,.04);border:1px solid rgba(139,91,246,.12);border-radius:10px;padding:12px 14px}
+.dian-card .dian-term{font-size:13px;color:var(--allusion);margin-bottom:4px}
+.dian-card .dian-exp{font-size:12px;color:#666;line-height:1.7}
+.bei-block{position:relative;padding-left:16px;border-left:2px solid rgba(201,168,76,.15)}
+.bei-event{position:relative;padding:4px 0 16px 20px}
+.bei-event::before{content:'';position:absolute;left:-17px;top:10px;width:8px;height:8px;border-radius:50%;background:rgba(201,168,76,.3);border:2px solid var(--panel)}
+.bei-year{font-size:11px;color:var(--accent);letter-spacing:.1em;margin-bottom:2px}
+.bei-title{font-size:14px;color:var(--text);line-height:1.7;letter-spacing:1px}
+.bei-body{font-size:12px;color:#555;margin-top:2px}
+.guan-block{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.guan-card{background:rgba(255,255,255,.02);border-radius:10px;padding:12px 14px;border:1px solid var(--border);cursor:pointer;transition:all .2s}
+.guan-card:active{background:rgba(201,168,76,.06)}
+.guan-card .guan-title{font-size:14px;color:var(--text);letter-spacing:1px;margin-bottom:4px}
+.guan-card .guan-form{font-size:11px;color:#444;margin-bottom:6px}
+.guan-card .guan-snippet{font-size:12px;color:#555;line-height:1.7;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.ren-block{display:flex;flex-direction:column;gap:10px}
+.ren-card{display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(255,255,255,.02);border-radius:10px;border:1px solid var(--border)}
+.ren-avatar{width:40px;height:40px;border-radius:50%;background:rgba(201,168,76,.1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.ren-info{flex:1;min-width:0}
+.ren-name{font-size:14px;color:var(--text);letter-spacing:1px;margin-bottom:2px}
+.ren-rel{font-size:12px;color:#444}
+.geo-block{position:relative;padding-left:16px;border-left:2px solid rgba(122,158,122,.2)}
+.geo-item{position:relative;padding:4px 0 14px 20px}
+.geo-item::before{content:'';position:absolute;left:-17px;top:10px;width:8px;height:8px;border-radius:50%;background:rgba(122,158,122,.3);border:2px solid var(--panel)}
+.geo-anc{font-size:11px;color:var(--place);letter-spacing:.1em;margin-bottom:2px}
+.geo-name{font-size:14px;color:var(--text);line-height:1.7}
+.geo-now{font-size:12px;color:#444;margin-top:2px}
+.xiandai-block{display:flex;flex-direction:column;gap:12px}
+.xiandai-card{background:rgba(201,168,76,.03);border-radius:10px;padding:14px 16px;border:1px solid rgba(201,168,76,.1)}
+.xiandai-card h4{font-size:12px;color:var(--accent);font-weight:400;letter-spacing:1px;margin-bottom:8px}
+.xiandai-card p{font-size:13px;color:#666;line-height:1.9}
+.loading{padding:80px 0;text-align:center;color:#444;font-size:14px}
+.loading::after{content:"...";animation:dots 1.5s infinite}
+@keyframes dots{0%,20%{content:"."}40%{content:".."}60%,100%{content:"..."}}
+.empty{padding:80px 0;text-align:center;color:#444;font-size:14px}
+.tip{display:none;position:fixed;z-index:9999;max-width:260px;padding:10px 14px;background:#1a1a1a;color:#eee;font-size:13px;line-height:1.7;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.4);pointer-events:none}
+.tip.show{display:block}
+.tip-type{font-size:10px;color:rgba(255,255,255,.4);margin-bottom:4px;letter-spacing:1px}
+.tip-name{font-weight:600;font-size:14px;margin-bottom:4px}
+.bottom-spacer{height:80px}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <button class="topbar-btn" id="btnIndex">☰</button>
+  <div class="topbar-title">苏轼知识库</div>
+  <button class="topbar-btn" id="btnShare">↑</button>
+</div>
+<div class="hero">
+  <div class="hero-chr">苏</div>
+  <div class="hero-name">轼</div>
+  <div class="hero-dates">北宋 · 1037—1101</div>
+  <div class="hero-quote">人生到处知何似，应似飞鸿踏雪泥。<br>泥上偶然留指爪，鸿飞那复计东西。</div>
+</div>
+<div class="stats-bar">
+  <span id="poemCount">—</span><span>首</span>
+  <span>·</span>
+  <span id="formCount">—</span><span>种词牌</span>
+</div>
+<div class="search-section">
+  <div class="search-box">
+    <span style="color:#444;font-size:16px">⌕</span>
+    <input id="searchInput" placeholder="搜索诗词、词牌…" autocomplete="off">
+  </div>
+</div>
+<div class="categories" id="categories"></div>
+<div class="result-count" id="resultCount"></div>
+<div class="poem-list" id="poemList"></div>
+<div class="tip" id="tip">
+  <div class="tip-type" id="tipType"></div>
+  <div class="tip-name" id="tipName"></div>
+</div>
+<div class="layer-overlay" id="layerOverlay"></div>
+<div class="layer-panel" id="layerPanel">
+  <div class="layer-hd">
+    <div class="layer-hd-title" id="layerPanelTitle">详情</div>
+    <button class="layer-close" id="layerClose">✕</button>
+  </div>
+  <div class="layer-tabs" id="layerTabs"></div>
+  <div class="layer-body" id="layerBody"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+<script>
+const LAYERS = [
+  {id:'orig',    label:'原文'},
+  {id:'bai',     label:'白话'},
+  {id:'shang',   label:'赏析'},
+  {id:'dian',    label:'典故'},
+  {id:'bei',     label:'背景'},
+  {id:'guan',    label:'关联'},
+  {id:'ren',     label:'人物'},
+  {id:'geo',     label:'地理'},
+  {id:'xiandai',label:'现代'},
+];
+let allPoems = [], author = {}, fuse = null, currentCat = '全部', currentQuery = '';
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+
+
+
+function annotate(line) {
+  if (!line) return '';
+  let s = esc(line);
+  s = s.replace(/【([^】]+)】/g,
+    '<span class="e e-form" data-type="词牌" data-name="$1">【$1】</span>');
+  ['苏轼','苏辙','王安石','欧阳修','黄庭坚','佛印','秦观','李清照','王弗','朝云','司马光','范仲淹','韩愈','柳宗元','杜甫','李白','白居易','陶渊明','刘邦','项羽','秦始皇','周瑜','曹操','孙权','诸葛亮'].forEach(p => {
+    if (s.includes(p)) {
+      s = s.split(p).join('<span class="e e-person" data-type="人物" data-name="'+p+'">'+p+'</span>');
+    }
+  });
+  return s;
+}
+
+function badges(p) {
+  const b = [];
+  if (p.content) b.push('原文');
+  if (p.content_modern || p.bai_hua) b.push('白话');
+  if (p.desc || p.shang) b.push('赏析');
+  if ((p.allusions||[]).length || (p.tags||[]).length) b.push('典故');
+  if (p.year_label || p.location || p.occasion) b.push('背景');
+  if ((p.related_poems||[]).length) b.push('关联');
+  if ((p.figures||[]).length) b.push('人物');
+  if (p.location) b.push('地理');
+  return b.map(x=>'<span class="layer-badge">'+x+'</span>').join('');
+}
+
+function renderContent(lid, p) {
+  if (!p) return '<div class="empty">请选择一首诗词</div>';
+  let h = '<div class="ly-head"><div class="ly-form">'+esc(p.form||'词')+'</div><div class="ly-title">'+esc(p.title||'无题')+'</div><div class="ly-meta">'+esc(p.year_label||'')+'</div><div class="ly-sep"></div></div>';
+  if (lid === 'orig') {
+    h += '<div class="orig-block">';
+    (p.content||'').split('\n').filter(l=>l.trim()).forEach(l => { h += '<p>'+annotate(l)+'</p>'; });
+    h += '</div>';
+  } else if (lid === 'bai') {
+    const b = p.content_modern || p.bai_hua || '';
+    h += b ? '<div class="bai-block"><p>'+esc(b).split('\n').join('</p><p>')+'</p></div>' : '<div class="empty">白话翻译待生成</div>';
+  } else if (lid === 'shang') {
+    const s = p.desc || p.shang || '';
+    if (s) {
+      h += '<div class="shang-block">';
+      s.split(/[。！？\n]/).filter(x=>x.trim()).forEach(x => { h += '<div class="shang-item"><div class="exp">'+esc(x.trim())+'。</div></div>'; });
+      h += '</div>';
+    } else { h += '<div class="empty">赏析待生成</div>'; }
+  } else if (lid === 'dian') {
+    const items = p.allusions||p.tags||[];
+    if (items.length) {
+      h += '<div class="dian-block">';
+      items.forEach(a => {
+        const term = typeof a==='string'?a:(a.term||a.name||'');
+        const exp = typeof a==='string'?'':(a.exp||a.description||'');
+        h += '<div class="dian-card"><div class="dian-term">'+esc(term)+'</div>'+(exp?'<div class="dian-exp">'+esc(exp)+'</div>':'')+'</div>';
+      });
+      h += '</div>';
+    } else { h += '<div class="empty">典故待标注</div>'; }
+  } else if (lid === 'bei') {
+    const evts = p.related_events||[];
+    if (p.year_label||p.location||p.occasion||evts.length) {
+      h += '<div class="bei-block">';
+      if (p.year_label) h += '<div class="bei-event"><div class="bei-year">'+esc(p.year_label)+'</div><div class="bei-body">创作年份</div></div>';
+      if (p.location) h += '<div class="bei-event"><div class="bei-title">'+esc(p.location)+'</div><div class="bei-body">创作地点</div></div>';
+      if (p.occasion) h += '<div class="bei-event"><div class="bei-title">'+esc(p.occasion)+'</div><div class="bei-body">创作缘由</div></div>';
+      evts.forEach(e => { h += '<div class="bei-event"><div class="bei-year">'+esc(e.year||'')+'</div><div class="bei-title">'+esc(e.event||e.title||'')+'</div><div class="bei-body">'+esc(e.description||'')+'</div></div>'; });
+      h += '</div>';
+    } else { h += '<div class="empty">背景待生成</div>'; }
+  } else if (lid === 'guan') {
+    const rp = p.related_poems||[];
+    if (rp.length) {
+      h += '<div class="guan-block">';
+      rp.slice(0,6).forEach(r => {
+        const t = typeof r==='string'?r:(r.title||'');
+        const f = typeof r==='string'?'':(r.form||'');
+        const sn = typeof r==='string'?'':(r.snippet||r.content||'');
+        h += `<div class="guan-card" data-id="${typeof r==='string'?r:(r.id||'')}"><div class="guan-title">${esc(t)}</div>${f?`<div class="guan-form">${esc(f)}</div>`:''}${sn?`<div class="guan-snippet">${esc(sn.substring(0,40))}</div>`:''}</div>`;
+      });
+      h += '</div>';
+    } else {
+      const same = allPoems.filter(x=>x.form===p.form&&x.id!==p.id).slice(0,6);
+      if (same.length) {
+        h += '<div style="margin-bottom:10px;font-size:12px;color:#444">同词牌其他作品</div><div class="guan-block">';
+        same.forEach(x => { h += `<div class="guan-card" data-id="${x.id}"><div class="guan-title">${esc(x.title||'')}</div><div class="guan-form">${esc(x.year_label||'')}</div><div class="guan-snippet">${esc((x.content||'').substring(0,40))}</div></div>`; });
+        h += '</div>';
+      } else { h += '<div class="empty">关联作品待生成</div>'; }
+    }
+  } else if (lid === 'ren') {
+    const figs = p.figures||[];
+    const me = author.name ? [{name:author.name, rel:'本人', desc:author.short_desc||''}] : [];
+    const allf = [...me, ...figs];
+    if (allf.length) {
+      h += '<div class="ren-block">';
+      allf.forEach(f => { h += '<div class="ren-card"><div class="ren-avatar">'+esc((f.name||'').substring(0,1))+'</div><div class="ren-info"><div class="ren-name">'+esc(f.name||'')+'</div><div class="ren-rel">'+esc(f.rel||'')+' · '+esc((f.desc||f.description||'').substring(0,30))+'</div></div></div>'; });
+      h += '</div>';
+    } else { h += '<div class="empty">相关人物待标注</div>'; }
+  } else if (lid === 'geo') {
+    if (p.location) {
+      h += '<div class="geo-block"><div class="geo-item"><div class="geo-anc">今</div><div class="geo-name">'+esc(p.location)+'</div><div class="geo-now">标注位置</div></div></div>';
+    } else { h += '<div class="empty">地理标注待生成</div>'; }
+  } else if (lid === 'xiandai') {
+    const ins = [
+      {title:'情感共鸣', body:'苏轼一生三起三落，这首词写于'+(p.year_label||'某个低谷时期')+'。"飞鸿踏雪泥"的意象——人生无常，不要执着于当下的得失，每段经历都在塑造你。'},
+      {title:'心理视角', body:'词中"也无风雨也无晴"——经典的认知重构。同样的处境，苏轼选择用哲学消解痛苦，不是逃避，而是主动的情绪降维。'},
+      {title:'现实映射', body:'职场/感情中的低谷，都可以借用苏轼的"一蓑烟雨任平生"——不是不在乎，而是接纳不确定性后再前行。'},
+    ];
+    h += '<div class="xiandai-block">';
+    ins.forEach(i => { h += '<div class="xiandai-card"><h4>'+esc(i.title)+'</h4><p>'+esc(i.body)+'</p></div>'; });
+    h += '</div>';
+  }
+  return h;
+}
+
+let currentEntry = null;
+
+function openPoem(id) {
+  const p = allPoems.find(x=>x.id===id);
+  if (!p) return;
+  currentEntry = p;
+  document.getElementById('layerTabs').innerHTML = LAYERS.map((l,i)=>'<button class="layer-tab'+(i===0?' on':'')+'" data-layer="'+l.id+'">'+l.label+'</button>').join('');
+  document.getElementById('layerPanelTitle').textContent = p.title||'详情';
+  document.getElementById('layerOverlay').classList.add('show');
+  document.getElementById('layerPanel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('layerBody').innerHTML = renderContent(LAYERS[0].id, p);
+  document.getElementById('layerBody').scrollTop = 0;
+  document.querySelectorAll('.layer-tab').forEach(t => {
+    t.onclick = () => {
+      document.querySelectorAll('.layer-tab').forEach(x=>x.classList.remove('on'));
+      t.classList.add('on');
+      document.getElementById('layerBody').innerHTML = renderContent(t.dataset.layer, currentEntry);
+      document.getElementById('layerBody').scrollTop = 0;
+    };
+  });
+}
+
+function closeLayer() {
+  document.getElementById('layerOverlay').classList.remove('show');
+  document.getElementById('layerPanel').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.getElementById('layerOverlay').onclick = closeLayer;
+document.getElementById('layerClose').onclick = closeLayer;
+
+(function(){
+  const tip = document.getElementById('tip');
+  document.addEventListener('mouseover', function(e){
+    const el = e.target.closest('.e');
+    if (!el) return;
+    document.getElementById('tipType').textContent = el.dataset.type||'';
+    document.getElementById('tipName').textContent = el.dataset.name||'';
+    tip.classList.add('show');
+    requestAnimationFrame(function(){
+      const rect = el.getBoundingClientRect();
+      let left = rect.left + rect.width/2 - tip.offsetWidth/2;
+      let top = rect.top - tip.offsetHeight - 8;
+      if (left < 8) left = 8;
+      if (left + tip.offsetWidth > window.innerWidth-8) left = window.innerWidth - tip.offsetWidth - 8;
+      if (top < 60) top = rect.bottom + 10;
+      tip.style.left = left+'px';
+      tip.style.top = top+'px';
+    });
+  });
+  document.addEventListener('mouseout', function(e){
+    if (!e.target.closest('.e')) return;
+    tip.classList.remove('show');
+  });
+})();
+
+function initCats() {
+  const forms = {};
+  allPoems.forEach(p => { const f = p.form||'其他'; forms[f] = (forms[f]||0)+1; });
+  const sorted = Object.entries(forms).sort((a,b)=>b[1]-a[1]);
+  const cats = ['全部'].concat(sorted.map(([f,n])=>f));
+  document.getElementById('categories').innerHTML = cats.map(c =>
+    '<span class="cat-btn'+(c==='全部'?' active':'')+'" data-cat="'+c+'">'+c+(c!=='全部'?' ('+forms[c]+')':'')+'</span>'
+  ).join('');
+  document.getElementById('formCount').textContent = sorted.length;
+}
+
+function getFiltered() {
+  let ps = allPoems;
+  if (currentCat !== '全部') ps = ps.filter(p=>p.form===currentCat);
+  if (currentQuery) ps = fuse.search(currentQuery).map(r=>r.item);
+  return ps;
+}
+
+function renderPoems() {
+  const ps = getFiltered();
+  document.getElementById('resultCount').textContent = ps.length ? ps.length+' 首' : '';
+  const list = document.getElementById('poemList');
+  if (!ps.length) { list.innerHTML='<div class="empty">无结果</div>'; return; }
+  list.innerHTML = ps.slice(0,100).map(p =>
+    `<div class="poem-card" data-id="${p.id}">`+
+    '<div class="card-top"><div class="card-title">'+esc(p.title||'无题')+'</div><div class="card-form">'+esc(p.form||'')+'</div></div>'+
+    '<div class="card-meta">'+esc(p.year_label||'')+'</div>'+
+    '<div class="card-snippet">'+esc((p.content||'').substring(0,60))+'</div>'+
+    (badges(p)?'<div class="layer-badges">'+badges(p)+'</div>':'')+
+    '</div>'
+  ).join('');
+}
+
+document.getElementById('categories').addEventListener('click', function(e){
+  const btn = e.target.closest('.cat-btn');
+  if (!btn) return;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentCat = btn.dataset.cat;
+  renderPoems();
+});
+
+let searchTimer;
+document.getElementById('searchInput').addEventListener('input', function(){
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(()=>{
+    currentQuery = this.value.trim();
+    renderPoems();
+  }, 200);
+});
+
+async function loadData() {
+  document.getElementById('poemList').innerHTML = '<div class="loading">正在加载诗词数据</div>';
+  try {
+    const r = await fetch('http://118.196.82.179/poem-data/sushi.json');
+    const data = await r.json();
+    allPoems = data.poems || [];
+    author = data.author || {};
+    document.getElementById('poemCount').textContent = allPoems.length;
+    initCats();
+    fuse = new Fuse(allPoems, {keys:['title','content','form','tags'], threshold:0.4, minMatchCharLength:1});
+    renderPoems();
+  } catch(e) {
+    document.getElementById('poemList').innerHTML = '<div class="empty">数据加载失败，请检查网络</div>';
+    console.error(e);
+  }
+}
+
+// Event delegation for poem/guan cards
+document.addEventListener('click', function(e) {
+  const card = e.target.closest('.poem-card[data-id], .guan-card[data-id]');
+  if (!card) return;
+  var id = card.dataset.id;
+  if (id) openPoem(id);
+});
+
+
+document.addEventListener('click', function(e) {
+  var card = e.target.closest('.poem-card[data-id], .guan-card[data-id]');
+  if (card && card.dataset.id) openPoem(card.dataset.id);
+});
+document.addEventListener('click', function(e) {
+  var card = e.target.closest('.poem-card[data-id], .guan-card[data-id]');
+  if (card && card.dataset.id) openPoem(card.dataset.id);
+});
+document.addEventListener('DOMContentLoaded', loadData);
+</script>
+</body>
+</html>
